@@ -54,6 +54,13 @@ class AIJobStatus(str, enum.Enum):
     failed = "failed"
 
 
+class DocumentStatus(str, enum.Enum):
+    pending = "pending"
+    processing = "processing"
+    ready = "ready"
+    failed = "failed"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -175,6 +182,10 @@ class UploadedDocument(Base):
     filename: Mapped[str] = mapped_column(String(255))
     content_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
     storage_path: Mapped[str] = mapped_column(Text)
+    status: Mapped[DocumentStatus] = mapped_column(Enum(DocumentStatus), default=DocumentStatus.pending, index=True)
+    processing_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    chunk_count: Mapped[int] = mapped_column(Integer, default=0)
+    processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     chunks: Mapped[list["KnowledgeChunk"]] = relationship(back_populates="document", cascade="all, delete-orphan")
@@ -189,6 +200,9 @@ class KnowledgeChunk(Base):
     organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
     content: Mapped[str] = mapped_column(Text)
     chunk_index: Mapped[int] = mapped_column(Integer)
+    source_page: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    token_count: Mapped[int] = mapped_column(Integer, default=0)
+    embedding_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
     embedding: Mapped[list[float] | None] = mapped_column(json_type, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

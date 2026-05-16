@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models import AIJobStatus, LeadStatus, PlanType, TaskPriority, TaskStatus
+from app.models import AIJobStatus, DocumentStatus, LeadStatus, PlanType, TaskPriority, TaskStatus
 
 
 class UserCreate(BaseModel):
@@ -178,6 +178,10 @@ class KnowledgeDocumentRead(BaseModel):
     id: UUID
     filename: str
     content_type: str | None
+    status: DocumentStatus
+    processing_error: str | None
+    chunk_count: int
+    processed_at: datetime | None
     created_at: datetime
 
 
@@ -185,9 +189,28 @@ class KnowledgeAskRequest(BaseModel):
     question: str = Field(min_length=4)
 
 
+class KnowledgeSearchRequest(BaseModel):
+    query: str = Field(min_length=3)
+    limit: int = Field(default=5, ge=1, le=10)
+
+
+class KnowledgeCitation(BaseModel):
+    chunk_id: UUID
+    document_id: UUID
+    filename: str
+    content: str
+    score: float
+    source_page: int | None = None
+
+
 class KnowledgeAskResponse(BaseModel):
     answer: str
     sources: list[str]
+    citations: list[KnowledgeCitation] = Field(default_factory=list)
+
+
+class KnowledgeSearchResponse(BaseModel):
+    results: list[KnowledgeCitation]
 
 
 class PlanRead(BaseModel):

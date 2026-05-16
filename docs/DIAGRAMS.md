@@ -18,11 +18,12 @@ flowchart LR
     Routes["Domain Routes"]
     Services["Workflow Services"]
     Agents["AI Agent Layer"]
-    Knowledge["Knowledge Service"]
+    Knowledge["RAG Knowledge Service"]
+    Worker["Celery Worker"]
   end
 
   subgraph Data["Data Layer"]
-    Postgres[("PostgreSQL")]
+    Postgres[("PostgreSQL + pgvector")]
     Redis[("Redis")]
     Uploads["Uploaded File Volume"]
   end
@@ -40,11 +41,15 @@ flowchart LR
   Services --> Agents
   Services --> Postgres
   Routes --> Knowledge
+  Knowledge --> Worker
+  Worker --> Knowledge
+  Worker --> Postgres
   Knowledge --> Postgres
   Knowledge --> Uploads
   Agents --> OpenAI
   Knowledge --> OpenAI
-  FastAPI -. "future cache/jobs" .-> Redis
+  FastAPI --> Redis
+  Worker --> Redis
 ```
 
 ## Backend Module Architecture
