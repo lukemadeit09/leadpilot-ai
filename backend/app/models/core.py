@@ -2,11 +2,13 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text, func
+from sqlalchemy import JSON, Boolean, DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+json_type = JSON().with_variant(JSONB, "postgresql")
 
 
 class LeadStatus(str, enum.Enum):
@@ -78,7 +80,7 @@ class LeadAnalysis(Base):
     urgency: Mapped[str] = mapped_column(String(50))
     category: Mapped[str] = mapped_column(String(120))
     lead_score: Mapped[int] = mapped_column(Integer)
-    pain_points: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    pain_points: Mapped[list[str]] = mapped_column(json_type, default=list)
     buying_intent: Mapped[str] = mapped_column(String(80))
     recommended_action: Mapped[str] = mapped_column(Text)
     suggested_reply: Mapped[str] = mapped_column(Text)
@@ -112,7 +114,7 @@ class ActivityLog(Base):
     lead_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("leads.id", ondelete="SET NULL"), nullable=True)
     action: Mapped[str] = mapped_column(String(120))
     detail: Mapped[str] = mapped_column(Text)
-    metadata_json: Mapped[dict] = mapped_column(JSONB, default=dict)
+    metadata_json: Mapped[dict] = mapped_column(json_type, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
 
@@ -137,7 +139,7 @@ class KnowledgeChunk(Base):
     owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
     content: Mapped[str] = mapped_column(Text)
     chunk_index: Mapped[int] = mapped_column(Integer)
-    embedding: Mapped[list[float] | None] = mapped_column(JSONB, nullable=True)
+    embedding: Mapped[list[float] | None] = mapped_column(json_type, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     document: Mapped[UploadedDocument] = relationship(back_populates="chunks")

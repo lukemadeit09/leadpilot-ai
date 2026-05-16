@@ -103,6 +103,16 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+Backend tests:
+
+```bash
+cd backend
+.venv\Scripts\activate
+pip install -r requirements-dev.txt
+cd ..
+pytest
+```
+
 Frontend:
 
 ```bash
