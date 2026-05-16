@@ -85,10 +85,14 @@ class Organization(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(255))
     plan: Mapped[PlanType] = mapped_column(Enum(PlanType), default=PlanType.starter, index=True)
+    widget_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    widget_title: Mapped[str] = mapped_column(String(120), default="Talk to sales")
+    widget_accent_color: Mapped[str] = mapped_column(String(20), default="#34d399")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     members: Mapped[list["OrganizationMember"]] = relationship(back_populates="organization", cascade="all, delete-orphan")
     api_keys: Mapped[list["OrganizationAPIKey"]] = relationship(back_populates="organization", cascade="all, delete-orphan")
+    integration_usage_events: Mapped[list["IntegrationUsageEvent"]] = relationship(back_populates="organization", cascade="all, delete-orphan")
 
 
 class OrganizationMember(Base):
@@ -209,6 +213,23 @@ class OrganizationAPIKey(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     organization: Mapped[Organization] = relationship(back_populates="api_keys")
+    usage_events: Mapped[list["IntegrationUsageEvent"]] = relationship(back_populates="api_key", cascade="all, delete-orphan")
+
+
+class IntegrationUsageEvent(Base):
+    __tablename__ = "integration_usage_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
+    api_key_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("organization_api_keys.id", ondelete="SET NULL"), nullable=True, index=True)
+    endpoint: Mapped[str] = mapped_column(String(120), index=True)
+    event_type: Mapped[str] = mapped_column(String(120), index=True)
+    status_code: Mapped[int] = mapped_column(Integer)
+    metadata_json: Mapped[dict] = mapped_column(json_type, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    organization: Mapped[Organization] = relationship(back_populates="integration_usage_events")
+    api_key: Mapped[OrganizationAPIKey | None] = relationship(back_populates="usage_events")
 
 
 class UploadedDocument(Base):

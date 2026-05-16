@@ -70,6 +70,8 @@ RAG knowledge base details are available in [docs/RAG.md](docs/RAG.md).
 
 Security hardening details are available in [docs/SECURITY.md](docs/SECURITY.md).
 
+Business integration setup is available in [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md).
+
 Observability and monitoring details are available in [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md).
 
 Demo and launch polish details are available in [docs/DEMO.md](docs/DEMO.md) and [docs/LAUNCH.md](docs/LAUNCH.md).
@@ -226,7 +228,13 @@ CI uses mock/test environment variables and does not require real OpenAI, Stripe
 - `POST /integrations/api-keys`
 - `GET /integrations/api-keys`
 - `DELETE /integrations/api-keys/{id}`
+- `GET /integrations/widget-config`
+- `PATCH /integrations/widget-config`
+- `GET /integrations/usage`
 - `POST /integrations/public/leads`
+- `POST /integrations/public/webhook`
+- `GET /integrations/public/widget-config`
+- `GET /integrations/widget.js`
 - `GET /tasks`
 - `POST /tasks`
 - `PATCH /tasks/{id}`

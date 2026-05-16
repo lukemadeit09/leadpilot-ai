@@ -84,6 +84,36 @@ export type BillingUsage = {
   month_start: string;
 };
 
+export type APIKey = {
+  id: string;
+  name: string;
+  key_prefix: string;
+  last_used_at?: string | null;
+  revoked_at?: string | null;
+  created_at: string;
+};
+
+export type APIKeyCreated = APIKey & {
+  api_key: string;
+};
+
+export type WidgetConfig = {
+  organization_id: string;
+  widget_enabled: boolean;
+  widget_title: string;
+  widget_accent_color: string;
+};
+
+export type IntegrationUsage = {
+  id: string;
+  api_key_id?: string | null;
+  endpoint: string;
+  event_type: string;
+  status_code: number;
+  metadata_json: Record<string, unknown>;
+  created_at: string;
+};
+
 export type AnalyzeLeadResponse = {
   lead: Lead;
   analysis: Analysis;

@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Bot, BriefcaseBusiness, Database, Home, LogOut, Menu, Settings, SquareCheckBig, Users, X } from "lucide-react";
+import { BarChart3, Bot, BriefcaseBusiness, Database, Home, LogOut, Menu, Plug, Settings, SquareCheckBig, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ const items = [
   { href: "/analyzer", label: "AI Analyzer", icon: Bot },
   { href: "/tasks", label: "Tasks", icon: SquareCheckBig },
   { href: "/knowledge", label: "Knowledge", icon: Database },
+  { href: "/integrations", label: "Integrations", icon: Plug },
   { href: "/settings", label: "Settings", icon: Settings }
 ];
 
