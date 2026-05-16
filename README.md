@@ -42,6 +42,8 @@ flowchart LR
 
 More detail is available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+Architecture and runtime sequence diagrams are available in [docs/DIAGRAMS.md](docs/DIAGRAMS.md).
+
 ## Folder Structure
 
 ```text
@@ -100,8 +102,11 @@ cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
+
+Database schema changes are managed with Alembic. The API no longer creates tables during FastAPI startup; run migrations before starting the backend in every environment.
 
 Backend tests:
 
