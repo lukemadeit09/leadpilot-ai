@@ -91,6 +91,18 @@ export type AnalyzeLeadResponse = {
   activity: Activity;
 };
 
+export type AIJob = {
+  id: string;
+  status: "queued" | "running" | "succeeded" | "failed";
+  endpoint_used: string;
+  attempts: number;
+  max_attempts: number;
+  error_message?: string | null;
+  result_payload?: AnalyzeLeadResponse | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type KnowledgeDocument = {
   id: string;
   filename: string;

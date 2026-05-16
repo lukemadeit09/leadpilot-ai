@@ -47,6 +47,13 @@ class PlanType(str, enum.Enum):
     agency = "agency"
 
 
+class AIJobStatus(str, enum.Enum):
+    queued = "queued"
+    running = "running"
+    succeeded = "succeeded"
+    failed = "failed"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -200,3 +207,21 @@ class AIUsageEvent(Base):
     estimated_cost: Mapped[float] = mapped_column(Numeric(10, 6))
     endpoint_used: Mapped[str] = mapped_column(String(120), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class AIJob(Base):
+    __tablename__ = "ai_jobs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
+    celery_task_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    status: Mapped[AIJobStatus] = mapped_column(Enum(AIJobStatus), default=AIJobStatus.queued, index=True)
+    endpoint_used: Mapped[str] = mapped_column(String(120), index=True)
+    request_payload: Mapped[dict] = mapped_column(json_type)
+    result_payload: Mapped[dict | None] = mapped_column(json_type, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=3)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

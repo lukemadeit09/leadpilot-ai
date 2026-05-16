@@ -5,7 +5,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import AIUsageEvent, OrganizationMember, OrganizationRole
+from app.models import AIJob, AIJobStatus, AIUsageEvent, OrganizationMember, OrganizationRole
+from app.tasks.ai_jobs import process_analyze_lead_job
 from tests.conftest import auth_headers, register_user
 
 
@@ -50,6 +51,78 @@ def test_ai_workflow_fallback_creates_lead_analysis_task_activity_and_usage(
     assert usage.input_tokens > 0
     assert usage.output_tokens > 0
     assert Decimal(str(usage.estimated_cost)) > 0
+
+
+def test_async_ai_job_creates_result_and_can_be_polled(client: TestClient, db_session: Session) -> None:
+    token = register_user(client, email="async@example.com")["access_token"]
+
+    created = client.post(
+        "/ai/analyze-lead/jobs",
+        headers=auth_headers(token),
+        json={
+            "name": "Async Buyer",
+            "email": "async-buyer@example.com",
+            "company": "Queue Labs",
+            "message": "We need pricing and want to schedule a demo next week.",
+        },
+    )
+
+    assert created.status_code == 202, created.text
+    job = created.json()
+    assert job["status"] == "succeeded"
+    assert job["result_payload"]["lead"]["company"] == "Queue Labs"
+    assert job["attempts"] == 1
+
+    polled = client.get(f"/ai/jobs/{job['id']}", headers=auth_headers(token))
+    assert polled.status_code == 200
+    assert "Queue Labs" in polled.json()["result_payload"]["task"]["title"]
+
+
+def test_async_job_status_is_org_scoped(client: TestClient) -> None:
+    owner = register_user(client, email="job-owner@example.com")
+    other = register_user(client, email="job-other@example.com")
+    created = client.post(
+        "/ai/analyze-lead/jobs",
+        headers=auth_headers(owner["access_token"]),
+        json={"message": "Need pricing and a demo next week."},
+    )
+    assert created.status_code == 202
+
+    blocked = client.get(f"/ai/jobs/{created.json()['id']}", headers=auth_headers(other["access_token"]))
+    assert blocked.status_code == 404
+
+
+def test_async_job_marks_failed_after_final_attempt(client: TestClient, db_session: Session, monkeypatch) -> None:
+    registered = register_user(client, email="failed-job@example.com")
+    membership = db_session.scalar(
+        select(OrganizationMember).where(OrganizationMember.user_id == UUID(registered["user"]["id"]))
+    )
+    assert membership is not None
+    job = AIJob(
+        owner_id=membership.user_id,
+        organization_id=membership.organization_id,
+        endpoint_used="/ai/analyze-lead",
+        request_payload={"message": "Need pricing."},
+        max_attempts=3,
+    )
+    db_session.add(job)
+    db_session.commit()
+    db_session.refresh(job)
+
+    def fail_run(*args, **kwargs):
+        raise RuntimeError("model provider unavailable")
+
+    monkeypatch.setattr("app.tasks.ai_jobs.AILeadWorkflow.run", fail_run)
+
+    try:
+        process_analyze_lead_job(db_session, job.id, retries=3, max_retries=3)
+    except RuntimeError:
+        pass
+
+    failed = db_session.get(AIJob, job.id)
+    assert failed is not None
+    assert failed.status == AIJobStatus.failed
+    assert failed.error_message == "model provider unavailable"
 
 
 def test_generate_reply_uses_fallback_without_openai_key(client: TestClient) -> None:

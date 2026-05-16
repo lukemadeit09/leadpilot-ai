@@ -1,5 +1,7 @@
 from app.models.core import (
     ActivityLog,
+    AIJob,
+    AIJobStatus,
     AIUsageEvent,
     KnowledgeChunk,
     Lead,
@@ -18,6 +20,8 @@ from app.models.core import (
 
 __all__ = [
     "ActivityLog",
+    "AIJob",
+    "AIJobStatus",
     "AIUsageEvent",
     "KnowledgeChunk",
     "Lead",

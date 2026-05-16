@@ -6,20 +6,25 @@ import { FormEvent, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Badge, buttonClass, EmptyState, Field, inputClass, PageHeader, Panel } from "@/components/ui";
 import { api } from "@/lib/api";
-import type { AnalyzeLeadResponse } from "@/types";
+import type { AIJob, AnalyzeLeadResponse } from "@/types";
+
+const pollDelay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function AnalyzerClient() {
   const [result, setResult] = useState<AnalyzeLeadResponse | null>(null);
+  const [job, setJob] = useState<AIJob | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = new FormData(event.currentTarget);
     setLoading(true);
     setError("");
-    const form = new FormData(event.currentTarget);
+    setResult(null);
+    setJob(null);
     try {
-      const response = await api<AnalyzeLeadResponse>("/ai/analyze-lead", {
+      const created = await api<AIJob>("/ai/analyze-lead/jobs", {
         method: "POST",
         body: JSON.stringify({
           name: form.get("name") || null,
@@ -28,7 +33,21 @@ export function AnalyzerClient() {
           message: form.get("message")
         })
       });
-      setResult(response);
+      setJob(created);
+      let current = created;
+      for (let attempt = 0; attempt < 30 && current.status !== "succeeded" && current.status !== "failed"; attempt += 1) {
+        await pollDelay(1500);
+        current = await api<AIJob>(`/ai/jobs/${created.id}`);
+        setJob(current);
+      }
+      if (current.status === "succeeded" && current.result_payload) {
+        setResult(current.result_payload);
+        return;
+      }
+      if (current.status === "failed") {
+        throw new Error(current.error_message || "Analysis job failed");
+      }
+      throw new Error("Analysis is still running. Check the dashboard shortly.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed");
     } finally {
@@ -61,9 +80,14 @@ export function AnalyzerClient() {
             />
           </Field>
           {error && <p className="rounded-md border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</p>}
+          {job && !result && !error && (
+            <p className="rounded-md border border-steel/30 bg-steel/10 p-3 text-sm text-sky-100">
+              Job {job.status}. Attempt {job.attempts || 1} of {job.max_attempts}.
+            </p>
+          )}
           <button className={`${buttonClass} w-full`} disabled={loading}>
             <Send size={16} />
-            {loading ? "Analyzing..." : "Run agentic workflow"}
+            {loading ? "Queued in worker..." : "Run agentic workflow"}
           </button>
         </form>
         <Panel title="Workflow output" description="Validated AI analysis and CRM side effects">

@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     app_env: str = "development"
     database_url: str = "postgresql+psycopg://leadpilot:leadpilot@localhost:5432/leadpilot"
     redis_url: str = "redis://localhost:6379/0"
+    celery_broker_url: str | None = None
+    celery_result_backend: str | None = None
+    celery_task_always_eager: bool = False
     jwt_secret_key: str = Field(default="dev-only-change-me")
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 1440
@@ -25,6 +28,14 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def broker_url(self) -> str:
+        return self.celery_broker_url or self.redis_url
+
+    @property
+    def result_backend_url(self) -> str:
+        return self.celery_result_backend or self.redis_url
 
 
 @lru_cache
