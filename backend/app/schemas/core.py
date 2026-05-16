@@ -247,11 +247,42 @@ class APIKeyRead(BaseModel):
     created_at: datetime
 
 
+class WidgetConfigRead(BaseModel):
+    organization_id: UUID
+    widget_enabled: bool
+    widget_title: str
+    widget_accent_color: str
+
+
+class WidgetConfigUpdate(BaseModel):
+    widget_enabled: bool | None = None
+    widget_title: str | None = Field(default=None, min_length=2, max_length=120)
+    widget_accent_color: str | None = Field(default=None, pattern=r"^#[0-9a-fA-F]{6}$")
+
+
 class PublicLeadCreate(BaseModel):
     name: str | None = Field(default=None, max_length=255)
     email: EmailStr | None = None
     company: str | None = Field(default=None, max_length=255)
     message: str = Field(min_length=5, max_length=20_000)
+
+
+class PublicWebhookPayload(BaseModel):
+    event: str = Field(min_length=2, max_length=120)
+    lead: PublicLeadCreate
+    metadata: dict = Field(default_factory=dict)
+
+
+class IntegrationUsageRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    api_key_id: UUID | None
+    endpoint: str
+    event_type: str
+    status_code: int
+    metadata_json: dict
+    created_at: datetime
 
 
 class UsageSummary(BaseModel):
