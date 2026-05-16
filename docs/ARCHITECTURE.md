@@ -18,6 +18,8 @@ flowchart LR
   API --> Redis[(Redis)]
 ```
 
+Additional architecture and sequence diagrams are available in [DIAGRAMS.md](DIAGRAMS.md).
+
 ## Monorepo Layout
 
 ```text
