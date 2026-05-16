@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models import LeadStatus, TaskPriority, TaskStatus
+from app.models import LeadStatus, PlanType, TaskPriority, TaskStatus
 
 
 class UserCreate(BaseModel):
@@ -174,3 +174,28 @@ class KnowledgeAskRequest(BaseModel):
 class KnowledgeAskResponse(BaseModel):
     answer: str
     sources: list[str]
+
+
+class PlanRead(BaseModel):
+    plan: PlanType
+    label: str
+    monthly_limit: float
+    included_seats: int
+
+
+class PlanUpdate(BaseModel):
+    plan: PlanType
+
+
+class UsageSummary(BaseModel):
+    organization_id: UUID
+    plan: PlanType
+    plan_label: str
+    monthly_limit: float
+    organization_used: float
+    user_used: float
+    remaining: float
+    usage_percent: float
+    requests: int
+    tokens: int
+    month_start: datetime

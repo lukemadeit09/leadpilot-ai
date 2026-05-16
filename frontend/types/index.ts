@@ -70,6 +70,20 @@ export type DashboardMetrics = {
   recent_activity: Activity[];
 };
 
+export type BillingUsage = {
+  organization_id: string;
+  plan: "starter" | "pro" | "agency";
+  plan_label: string;
+  monthly_limit: number;
+  organization_used: number;
+  user_used: number;
+  remaining: number;
+  usage_percent: number;
+  requests: number;
+  tokens: number;
+  month_start: string;
+};
+
 export type AnalyzeLeadResponse = {
   lead: Lead;
   analysis: Analysis;

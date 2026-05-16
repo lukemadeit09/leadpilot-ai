@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import AIUsageEvent, OrganizationMember
+from app.models import AIUsageEvent, OrganizationMember, OrganizationRole
 from tests.conftest import auth_headers, register_user
 
 
@@ -94,3 +94,48 @@ def test_ai_request_is_blocked_when_monthly_limit_is_reached(client: TestClient,
 
     assert response.status_code == 402
     assert response.json()["detail"]["message"] == "AI monthly usage limit reached"
+
+
+def test_billing_usage_summary_and_plan_update(client: TestClient, db_session: Session) -> None:
+    registered = register_user(client, email="billing@example.com")
+    token = registered["access_token"]
+
+    usage = client.get("/billing/usage", headers=auth_headers(token))
+    assert usage.status_code == 200
+    assert usage.json()["plan"] == "starter"
+    assert usage.json()["monthly_limit"] == 5.0
+    assert usage.json()["remaining"] == 5.0
+
+    plans = client.get("/billing/plans", headers=auth_headers(token))
+    assert plans.status_code == 200
+    assert [plan["plan"] for plan in plans.json()] == ["starter", "pro", "agency"]
+
+    updated = client.patch("/billing/plan", headers=auth_headers(token), json={"plan": "pro"})
+    assert updated.status_code == 200
+    assert updated.json()["plan"] == "pro"
+    assert updated.json()["monthly_limit"] == 50.0
+
+
+def test_only_org_admin_can_update_plan(client: TestClient, db_session: Session) -> None:
+    owner = register_user(client, email="billing-owner@example.com")
+    member = register_user(client, email="billing-member@example.com")
+    owner_membership = db_session.scalar(
+        select(OrganizationMember).where(OrganizationMember.user_id == UUID(owner["user"]["id"]))
+    )
+    member_membership = db_session.scalar(
+        select(OrganizationMember).where(OrganizationMember.user_id == UUID(member["user"]["id"]))
+    )
+    assert owner_membership is not None
+    assert member_membership is not None
+
+    member_membership.organization_id = owner_membership.organization_id
+    member_membership.role = OrganizationRole.member
+    db_session.commit()
+
+    response = client.patch(
+        "/billing/plan",
+        headers=auth_headers(member["access_token"]),
+        json={"plan": "agency"},
+    )
+
+    assert response.status_code == 403
