@@ -46,6 +46,8 @@ More detail is available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 Architecture and runtime sequence diagrams are available in [docs/DIAGRAMS.md](docs/DIAGRAMS.md).
 
+Production deployment guidance is available in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 ## Folder Structure
 
 ```text
@@ -140,6 +142,9 @@ npm run dev
 - `OPENAI_COMPLEX_MODEL`: stronger model for multi-step lead analysis workflows
 - `OPENAI_EMBEDDING_MODEL`: embedding model for document chunks
 - `CORS_ORIGINS`: comma-separated frontend origins
+- `TRUSTED_HOSTS`: comma-separated backend hostnames allowed in production
+- `LOG_LEVEL`: backend log level
+- `GUNICORN_WORKERS`: backend production worker count
 - `NEXT_PUBLIC_API_URL`: browser-facing backend URL
 
 ## API Overview
