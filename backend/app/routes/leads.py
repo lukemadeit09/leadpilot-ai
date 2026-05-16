@@ -36,6 +36,7 @@ def list_leads(
 def create_lead(payload: LeadCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> Lead:
     lead = Lead(owner_id=current_user.id, **payload.model_dump())
     db.add(lead)
+    db.flush()
     log_activity(db, current_user.id, "lead_created", "Lead was created manually.", lead.id)
     db.commit()
     db.refresh(lead)

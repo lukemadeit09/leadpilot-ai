@@ -108,6 +108,16 @@ uvicorn app.main:app --reload
 
 Database schema changes are managed with Alembic. The API no longer creates tables during FastAPI startup; run migrations before starting the backend in every environment.
 
+Backend tests:
+
+```bash
+cd backend
+.venv\Scripts\activate
+pip install -r requirements-dev.txt
+cd ..
+pytest
+```
+
 Frontend:
 
 ```bash

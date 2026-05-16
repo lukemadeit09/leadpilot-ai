@@ -39,6 +39,7 @@ class AILeadWorkflow:
         analysis_payload.follow_up_task = self._follow_up_title(status_value, payload.company)
 
         lead = self._upsert_lead(db, user, payload, analysis_payload, status_value)
+        db.flush()
         analysis = LeadAnalysis(lead_id=lead.id, **analysis_payload.model_dump())
         db.add(analysis)
 
