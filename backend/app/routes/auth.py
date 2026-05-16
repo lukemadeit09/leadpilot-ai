@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.security import create_access_token, get_current_user, hash_password, verify_password
 from app.database import get_db
-from app.models import User
+from app.models import Organization, OrganizationMember, OrganizationRole, User
 from app.schemas import Token, UserCreate, UserLogin, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -21,6 +21,11 @@ def register(payload: UserCreate, db: Session = Depends(get_db)) -> Token:
         hashed_password=hash_password(payload.password),
     )
     db.add(user)
+    db.flush()
+    organization = Organization(name=f"{payload.full_name}'s Workspace")
+    db.add(organization)
+    db.flush()
+    db.add(OrganizationMember(organization_id=organization.id, user_id=user.id, role=OrganizationRole.owner))
     db.commit()
     db.refresh(user)
     return Token(access_token=create_access_token(user.id), user=UserRead.model_validate(user))

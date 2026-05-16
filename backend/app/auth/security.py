@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.database import get_db
-from app.models import User
+from app.models import OrganizationMember, User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -51,3 +51,17 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if not user:
         raise credentials_error
     return user
+
+
+def get_current_organization(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> OrganizationMember:
+    membership = db.scalar(
+        select(OrganizationMember)
+        .where(OrganizationMember.user_id == current_user.id)
+        .order_by(OrganizationMember.created_at.asc())
+    )
+    if not membership:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No organization access")
+    return membership
