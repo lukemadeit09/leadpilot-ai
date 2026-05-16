@@ -1,0 +1,45 @@
+"use client";
+
+import { useCallback } from "react";
+
+import { AppShell } from "@/components/app-shell";
+import { Badge, EmptyState, LoadingRows } from "@/components/ui";
+import { api } from "@/lib/api";
+import { useAsyncData } from "@/hooks/use-api";
+import type { Task } from "@/types";
+
+export function TasksClient() {
+  const loader = useCallback(() => api<Task[]>("/tasks"), []);
+  const { data, loading, error } = useAsyncData(loader);
+  return (
+    <AppShell>
+      <div className="mb-6">
+        <p className="text-sm text-mint">Execution</p>
+        <h1 className="text-3xl font-semibold text-white">Tasks</h1>
+      </div>
+      <section className="rounded-lg border border-line bg-panel p-5">
+        {error && <p className="text-sm text-rose-200">{error}</p>}
+        {loading || !data ? (
+          <LoadingRows />
+        ) : data.length === 0 ? (
+          <EmptyState title="No tasks yet" detail="Analyze a lead and LeadPilot AI will create follow-up work automatically." />
+        ) : (
+          <div className="space-y-3">
+            {data.map((task) => (
+              <div key={task.id} className="flex flex-col justify-between gap-3 rounded-md border border-line bg-ink p-4 md:flex-row md:items-center">
+                <div>
+                  <p className="font-medium text-white">{task.title}</p>
+                  <p className="mt-1 text-sm text-slate-400">{task.description}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Badge tone={task.priority === "high" || task.priority === "urgent" ? "warn" : "neutral"}>{task.priority}</Badge>
+                  <Badge tone={task.status === "completed" ? "good" : "info"}>{task.status}</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </AppShell>
+  );
+}
