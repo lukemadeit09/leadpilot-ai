@@ -1,5 +1,6 @@
 from app.models.core import (
     ActivityLog,
+    AIUsageEvent,
     KnowledgeChunk,
     Lead,
     LeadAnalysis,
@@ -7,6 +8,7 @@ from app.models.core import (
     Organization,
     OrganizationMember,
     OrganizationRole,
+    PlanType,
     Task,
     TaskPriority,
     TaskStatus,
@@ -16,6 +18,7 @@ from app.models.core import (
 
 __all__ = [
     "ActivityLog",
+    "AIUsageEvent",
     "KnowledgeChunk",
     "Lead",
     "LeadAnalysis",
@@ -23,6 +26,7 @@ __all__ = [
     "Organization",
     "OrganizationMember",
     "OrganizationRole",
+    "PlanType",
     "Task",
     "TaskPriority",
     "TaskStatus",
