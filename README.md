@@ -102,8 +102,11 @@ cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
+
+Database schema changes are managed with Alembic. The API no longer creates tables during FastAPI startup; run migrations before starting the backend in every environment.
 
 Frontend:
 
