@@ -10,10 +10,22 @@ from app.config import get_settings
 from app.models import AIUsageEvent, Organization, OrganizationMember, PlanType
 
 
+PLAN_LABELS: dict[PlanType, str] = {
+    PlanType.starter: "Starter",
+    PlanType.pro: "Pro",
+    PlanType.agency: "Agency",
+}
+
 PLAN_MONTHLY_LIMITS: dict[PlanType, Decimal] = {
     PlanType.starter: Decimal("5.00"),
     PlanType.pro: Decimal("50.00"),
     PlanType.agency: Decimal("250.00"),
+}
+
+PLAN_INCLUDED_SEATS: dict[PlanType, int] = {
+    PlanType.starter: 1,
+    PlanType.pro: 5,
+    PlanType.agency: 20,
 }
 
 MODEL_PRICING_PER_1M_TOKENS: dict[str, tuple[Decimal, Decimal]] = {
@@ -89,13 +101,71 @@ class AIUsageService:
         return usage
 
     def monthly_total(self, db: Session, organization_id: UUID) -> Decimal:
-        month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        total = db.scalar(
-            select(func.coalesce(func.sum(AIUsageEvent.estimated_cost), 0)).where(
-                AIUsageEvent.organization_id == organization_id,
-                AIUsageEvent.created_at >= month_start,
+        return self._monthly_total(db, organization_id=organization_id)
+
+    def usage_summary(self, db: Session, organization: Organization, user_id: UUID) -> dict:
+        plan = PlanType(organization.plan)
+        month_start = self.month_start()
+        organization_used = self._monthly_total(db, organization_id=organization.id)
+        user_used = self._monthly_total(db, organization_id=organization.id, owner_id=user_id)
+        monthly_limit = PLAN_MONTHLY_LIMITS[plan]
+        requests = (
+            db.scalar(
+                select(func.count())
+                .select_from(AIUsageEvent)
+                .where(AIUsageEvent.organization_id == organization.id, AIUsageEvent.created_at >= month_start)
             )
+            or 0
         )
+        tokens = (
+            db.scalar(
+                select(func.coalesce(func.sum(AIUsageEvent.input_tokens + AIUsageEvent.output_tokens), 0)).where(
+                    AIUsageEvent.organization_id == organization.id,
+                    AIUsageEvent.created_at >= month_start,
+                )
+            )
+            or 0
+        )
+        remaining = max(Decimal("0"), monthly_limit - organization_used)
+        usage_percent = Decimal("0") if monthly_limit == 0 else min(Decimal("100"), (organization_used / monthly_limit) * Decimal("100"))
+        return {
+            "organization_id": organization.id,
+            "plan": plan.value,
+            "plan_label": PLAN_LABELS[plan],
+            "monthly_limit": float(monthly_limit),
+            "organization_used": float(organization_used),
+            "user_used": float(user_used),
+            "remaining": float(remaining),
+            "usage_percent": float(usage_percent.quantize(Decimal("0.01"))),
+            "requests": int(requests),
+            "tokens": int(tokens),
+            "month_start": month_start,
+        }
+
+    def plan_catalog(self) -> list[dict]:
+        return [
+            {
+                "plan": plan.value,
+                "label": PLAN_LABELS[plan],
+                "monthly_limit": float(PLAN_MONTHLY_LIMITS[plan]),
+                "included_seats": PLAN_INCLUDED_SEATS[plan],
+            }
+            for plan in PlanType
+        ]
+
+    @staticmethod
+    def month_start() -> datetime:
+        return datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    def _monthly_total(self, db: Session, organization_id: UUID, owner_id: UUID | None = None) -> Decimal:
+        month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        stmt = select(func.coalesce(func.sum(AIUsageEvent.estimated_cost), 0)).where(
+            AIUsageEvent.organization_id == organization_id,
+            AIUsageEvent.created_at >= month_start,
+        )
+        if owner_id:
+            stmt = stmt.where(AIUsageEvent.owner_id == owner_id)
+        total = db.scalar(stmt)
         return Decimal(str(total or 0))
 
     @staticmethod

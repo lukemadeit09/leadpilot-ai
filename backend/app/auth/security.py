@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.database import get_db
-from app.models import OrganizationMember, User
+from app.models import OrganizationMember, OrganizationRole, User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -64,4 +64,12 @@ def get_current_organization(
     )
     if not membership:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No organization access")
+    return membership
+
+
+def require_organization_admin(
+    membership: OrganizationMember = Depends(get_current_organization),
+) -> OrganizationMember:
+    if membership.role not in {OrganizationRole.owner, OrganizationRole.admin}:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Organization admin access required")
     return membership

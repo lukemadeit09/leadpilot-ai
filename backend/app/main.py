@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.models import *  # noqa: F403
-from app.routes import activity, ai, auth, knowledge, leads, tasks
+from app.routes import activity, ai, auth, billing, knowledge, leads, tasks
 
 settings = get_settings()
 
@@ -36,6 +36,7 @@ app.include_router(auth.router)
 app.include_router(leads.dashboard_router)
 app.include_router(leads.router)
 app.include_router(ai.router)
+app.include_router(billing.router)
 app.include_router(tasks.router)
 app.include_router(knowledge.router)
 app.include_router(activity.router)
