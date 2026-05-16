@@ -1,5 +1,7 @@
 # LeadPilot AI
 
+[![CI](https://github.com/lukemadeit09/leadpilot-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/lukemadeit09/leadpilot-ai/actions/workflows/ci.yml)
+
 LeadPilot AI is an AI-powered CRM automation platform that reads customer messages, analyzes leads, generates replies, saves data to a CRM, creates follow-up tasks, and helps sales teams work faster.
 
 ## Product Summary
@@ -137,6 +139,23 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## CI
+
+GitHub Actions runs on every pull request and every push to `main`.
+
+The CI workflow checks:
+
+- backend dependency install
+- backend compile check
+- backend pytest suite
+- Python security scan with Bandit
+- frontend dependency install with `npm ci`
+- frontend typecheck
+- frontend production build
+- production dependency audit with `npm audit --omit=dev`
+
+CI uses mock/test environment variables and does not require real OpenAI, Stripe, or other secret keys.
 
 ## Environment Variables
 
