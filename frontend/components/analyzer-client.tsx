@@ -4,7 +4,7 @@ import { Send } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
-import { Badge, buttonClass, EmptyState, Field, inputClass, PageHeader, Panel } from "@/components/ui";
+import { Alert, Badge, buttonClass, EmptyState, Field, inputClass, PageHeader, Panel } from "@/components/ui";
 import { api } from "@/lib/api";
 import type { AIJob, AnalyzeLeadResponse } from "@/types";
 
@@ -79,7 +79,7 @@ export function AnalyzerClient() {
               defaultValue="Hi, we are a company with 45 employees and we are interested in your software. Can you send pricing and maybe schedule a demo next week?"
             />
           </Field>
-          {error && <p className="rounded-md border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</p>}
+          {error && <Alert>{error}</Alert>}
           {job && !result && !error && (
             <p className="rounded-md border border-steel/30 bg-steel/10 p-3 text-sm text-sky-100">
               Job {job.status}. Attempt {job.attempts || 1} of {job.max_attempts}.

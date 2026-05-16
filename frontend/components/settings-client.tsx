@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 
 import { AppShell } from "@/components/app-shell";
-import { Badge, LoadingRows, PageHeader, Panel } from "@/components/ui";
+import { Alert, Badge, LoadingRows, PageHeader, Panel } from "@/components/ui";
 import { useAsyncData } from "@/hooks/use-api";
 import { api } from "@/lib/api";
 import type { BillingUsage } from "@/types";
@@ -22,7 +22,7 @@ export function SettingsClient() {
         description="Operational readiness, plan limits, and deployment-sensitive configuration for the LeadPilot AI workspace."
       />
       <div className="space-y-5">
-        {error && <p className="rounded-md border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</p>}
+        {error && <Alert>{error}</Alert>}
         <Panel title="AI usage and plan" description="Monthly quota protection for AI workflows">
           <div className="p-5">
             {loading || !data ? (
