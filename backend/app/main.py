@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.database import Base, engine
 from app.models import *  # noqa: F403
 from app.routes import activity, ai, auth, knowledge, leads, tasks
 
@@ -26,7 +25,6 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup() -> None:
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
-    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health", tags=["system"])
