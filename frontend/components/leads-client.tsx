@@ -20,21 +20,25 @@ export function LeadsClient() {
 
   async function createLead(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     setCreating(true);
-    const form = new FormData(event.currentTarget);
-    await api<Lead>("/leads", {
-      method: "POST",
-      body: JSON.stringify({
-        name: form.get("name"),
-        email: form.get("email") || null,
-        company: form.get("company"),
-        message: form.get("message"),
-        status: "new"
-      })
-    });
-    event.currentTarget.reset();
-    setCreating(false);
-    await reload();
+    try {
+      await api<Lead>("/leads", {
+        method: "POST",
+        body: JSON.stringify({
+          name: form.get("name"),
+          email: form.get("email") || null,
+          company: form.get("company"),
+          message: form.get("message"),
+          status: "new"
+        })
+      });
+      formElement.reset();
+      await reload();
+    } finally {
+      setCreating(false);
+    }
   }
 
   return (
