@@ -8,7 +8,7 @@ celery_app = Celery(
     "leadpilot",
     broker=settings.broker_url,
     backend=settings.result_backend_url,
-    include=["app.tasks.ai_jobs"],
+    include=["app.tasks.ai_jobs", "app.tasks.knowledge_jobs"],
 )
 
 celery_app.conf.update(

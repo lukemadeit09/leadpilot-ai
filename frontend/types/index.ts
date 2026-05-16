@@ -107,5 +107,24 @@ export type KnowledgeDocument = {
   id: string;
   filename: string;
   content_type?: string | null;
+  status: "pending" | "processing" | "ready" | "failed";
+  processing_error?: string | null;
+  chunk_count: number;
+  processed_at?: string | null;
   created_at: string;
+};
+
+export type KnowledgeCitation = {
+  chunk_id: string;
+  document_id: string;
+  filename: string;
+  content: string;
+  score: number;
+  source_page?: number | null;
+};
+
+export type KnowledgeAnswer = {
+  answer: string;
+  sources: string[];
+  citations: KnowledgeCitation[];
 };

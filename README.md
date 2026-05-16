@@ -17,7 +17,7 @@ LeadPilot AI demonstrates a production-style B2B SaaS workflow: a sales rep subm
 - Async AI lead analysis jobs with Celery, Redis, durable status tracking, retries, and frontend polling
 - Multi-agent backend design: analyzer, scoring, reply, CRM, and task agents
 - Agentic workflow that persists lead, analysis, task, and activity log in one transaction
-- RAG-style knowledge base with PDF/text uploads, chunking, embeddings when OpenAI is configured, and fallback local search
+- RAG knowledge base with PDF/text uploads, background chunking, embeddings, semantic search, pgvector-ready storage, and citations
 - Dashboard metrics, pipeline chart, activity timeline, task queue, and modern dark SaaS UI
 - Dockerized frontend, backend, PostgreSQL, and Redis
 - Environment-variable based configuration with no committed secrets
@@ -36,10 +36,12 @@ flowchart LR
   UI[Next.js SaaS Dashboard] --> API[FastAPI]
   API --> Auth[JWT Auth]
   API --> CRM[CRM Workflow Services]
-  CRM --> DB[(PostgreSQL)]
+  CRM --> DB[(PostgreSQL + pgvector)]
   API --> Agents[AI Agents]
   Agents --> OpenAI[OpenAI API]
   API --> KB[RAG Knowledge Base]
+  KB --> Worker[Celery Worker]
+  Worker --> DB
   KB --> DB
   API --> Redis[(Redis)]
 ```
@@ -51,6 +53,8 @@ Architecture and runtime sequence diagrams are available in [docs/DIAGRAMS.md](d
 Billing and usage quota details are available in [docs/BILLING.md](docs/BILLING.md).
 
 Async worker details are available in [docs/ASYNC_WORKERS.md](docs/ASYNC_WORKERS.md).
+
+RAG knowledge base details are available in [docs/RAG.md](docs/RAG.md).
 
 ## Folder Structure
 
@@ -172,6 +176,7 @@ npm run dev
 - `DELETE /tasks/{id}`
 - `POST /knowledge/upload`
 - `GET /knowledge/documents`
+- `POST /knowledge/search`
 - `POST /knowledge/ask`
 - `GET /activity`
 
@@ -192,8 +197,6 @@ This project is structured to demonstrate practical AI automation engineering: m
 ## Future Improvements
 
 - Add Alembic migrations for production schema evolution
-- Add Celery workers for long-running document ingestion
-- Add Redis-backed caching for dashboard metrics and knowledge search
 - Add WebSocket activity streaming to the dashboard
 - Add role-based admin controls and organization workspaces
 - Add email sending provider integration for approved AI replies

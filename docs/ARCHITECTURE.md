@@ -10,9 +10,11 @@ flowchart LR
   API --> Auth[JWT Auth]
   API --> CRM[CRM Workflow Services]
   API --> Agents[AI Agent Layer]
-  API --> KB[Knowledge Base Service]
-  CRM --> DB[(PostgreSQL)]
+  API --> KB[RAG Knowledge Base Service]
+  KB --> Worker[Celery Worker]
+  CRM --> DB[(PostgreSQL + pgvector)]
   KB --> DB
+  Worker --> DB
   Agents --> OpenAI[OpenAI API]
   KB --> OpenAI
   API --> Redis[(Redis)]
@@ -50,8 +52,8 @@ Core tables:
 - `lead_analyses`: structured AI output for submitted messages.
 - `tasks`: follow-up work, manually or AI-created.
 - `activity_logs`: audit trail for CRM actions.
-- `uploaded_documents`: knowledge base files.
-- `knowledge_chunks`: searchable document chunks with embeddings.
+- `uploaded_documents`: organization-scoped knowledge base files with processing status.
+- `knowledge_chunks`: searchable document chunks with source metadata, embeddings, and pgvector-ready vector storage.
 
 ## Agentic Workflow
 
@@ -70,7 +72,7 @@ When a sales rep submits a message:
 - `GET /leads`, `POST /leads`, `GET /leads/{id}`, `PATCH /leads/{id}`, `DELETE /leads/{id}`
 - `POST /ai/analyze-lead`, `POST /ai/generate-reply`
 - `GET /tasks`, `POST /tasks`, `PATCH /tasks/{id}`, `DELETE /tasks/{id}`
-- `POST /knowledge/upload`, `GET /knowledge/documents`, `POST /knowledge/ask`
+- `POST /knowledge/upload`, `GET /knowledge/documents`, `POST /knowledge/search`, `POST /knowledge/ask`
 - `GET /activity`
 
 ## Implementation Roadmap
