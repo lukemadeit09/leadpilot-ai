@@ -23,6 +23,7 @@ class TextChunk:
 
 class KnowledgeService:
     allowed_suffixes = {".pdf", ".txt", ".md"}
+    allowed_content_types = {"application/pdf", "text/plain", "text/markdown", "application/octet-stream"}
 
     def __init__(self) -> None:
         self.settings = get_settings()
@@ -31,10 +32,14 @@ class KnowledgeService:
     async def upload(self, db: Session, user: User, organization_id: UUID, file: UploadFile) -> UploadedDocument:
         safe_name = Path(file.filename or "document.txt").name
         self._validate_filename(safe_name)
+        self._validate_content_type(file.content_type)
+        body = await file.read()
+        if len(body) > self.settings.max_upload_bytes:
+            raise ValueError(f"Upload exceeds {self.settings.max_upload_bytes} byte limit")
         user_dir = Path(self.settings.upload_dir) / str(user.id)
         user_dir.mkdir(parents=True, exist_ok=True)
         storage_path = user_dir / safe_name
-        storage_path.write_bytes(await file.read())
+        storage_path.write_bytes(body)
 
         document = UploadedDocument(
             owner_id=user.id,
@@ -181,6 +186,10 @@ class KnowledgeService:
     def _validate_filename(self, filename: str) -> None:
         if Path(filename).suffix.lower() not in self.allowed_suffixes:
             raise ValueError("Only PDF, text, and markdown uploads are supported")
+
+    def _validate_content_type(self, content_type: str | None) -> None:
+        if content_type and content_type not in self.allowed_content_types:
+            raise ValueError("Unsupported upload content type")
 
     @staticmethod
     def _store_pgvector_embedding(db: Session, chunk_id: UUID, embedding: list[float]) -> None:

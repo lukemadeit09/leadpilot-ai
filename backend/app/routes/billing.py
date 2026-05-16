@@ -6,8 +6,10 @@ from app.database import get_db
 from app.models import Organization, OrganizationMember, User
 from app.schemas import PlanRead, PlanUpdate, UsageSummary
 from app.services.ai_usage import AIUsageService
+from app.services.rate_limit import rate_limit_billing
+from app.services.security_audit import log_security_event
 
-router = APIRouter(prefix="/billing", tags=["billing"])
+router = APIRouter(prefix="/billing", tags=["billing"], dependencies=[Depends(rate_limit_billing)])
 
 
 @router.get("/plans", response_model=list[PlanRead])
@@ -38,6 +40,13 @@ def update_plan(
     if not organization:
         raise HTTPException(status_code=404, detail="Organization not found")
     organization.plan = payload.plan
+    log_security_event(
+        db,
+        "billing_plan_updated",
+        f"Organization plan changed to {payload.plan.value}",
+        owner_id=current_user.id,
+        organization_id=organization.id,
+    )
     db.commit()
     db.refresh(organization)
     return AIUsageService().usage_summary(db, organization, current_user.id)

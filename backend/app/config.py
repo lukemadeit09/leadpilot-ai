@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     celery_task_always_eager: bool = False
     jwt_secret_key: str = Field(default="dev-only-change-me")
     jwt_algorithm: str = "HS256"
+    jwt_issuer: str = "leadpilot-ai"
     access_token_expire_minutes: int = 1440
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
@@ -22,12 +23,22 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
     cors_origins: str = "http://localhost:3000"
     upload_dir: Path = Path("uploads")
+    max_upload_bytes: int = 10 * 1024 * 1024
+    rate_limit_auth_per_minute: int = 20
+    rate_limit_ai_per_minute: int = 60
+    rate_limit_billing_per_minute: int = 60
+    rate_limit_public_per_minute: int = 120
+    failed_login_lock_threshold: int = 5
+    failed_login_lock_minutes: int = 15
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        origins = [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        if self.app_env == "production" and "*" in origins:
+            raise ValueError("CORS_ORIGINS cannot include '*' in production")
+        return origins
 
     @property
     def broker_url(self) -> str:

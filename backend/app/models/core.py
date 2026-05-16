@@ -70,6 +70,9 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(50), default="sales_rep")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    failed_login_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_failed_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     leads: Mapped[list["Lead"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
@@ -85,6 +88,7 @@ class Organization(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     members: Mapped[list["OrganizationMember"]] = relationship(back_populates="organization", cascade="all, delete-orphan")
+    api_keys: Mapped[list["OrganizationAPIKey"]] = relationship(back_populates="organization", cascade="all, delete-orphan")
 
 
 class OrganizationMember(Base):
@@ -171,6 +175,40 @@ class ActivityLog(Base):
     detail: Mapped[str] = mapped_column(Text)
     metadata_json: Mapped[dict] = mapped_column(json_type, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class SecurityAuditLog(Base):
+    __tablename__ = "security_audit_logs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    organization_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    action: Mapped[str] = mapped_column(String(120), index=True)
+    detail: Mapped[str] = mapped_column(Text)
+    ip_address: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    metadata_json: Mapped[dict] = mapped_column(json_type, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class OrganizationAPIKey(Base):
+    __tablename__ = "organization_api_keys"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), index=True)
+    created_by_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    key_prefix: Mapped[str] = mapped_column(String(24), index=True)
+    key_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    organization: Mapped[Organization] = relationship(back_populates="api_keys")
 
 
 class UploadedDocument(Base):

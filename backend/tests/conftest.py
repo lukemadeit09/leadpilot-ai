@@ -15,6 +15,7 @@ from sqlalchemy.pool import StaticPool
 from app.config import get_settings
 from app.database import Base, get_db
 from app.main import app
+from app.services.rate_limit import reset_rate_limits
 
 
 @pytest.fixture(autouse=True)
@@ -22,8 +23,10 @@ def clear_settings_cache(monkeypatch: pytest.MonkeyPatch) -> Generator[None, Non
     monkeypatch.setenv("OPENAI_API_KEY", "")
     monkeypatch.setenv("JWT_SECRET_KEY", "test-secret-key")
     monkeypatch.setenv("CELERY_TASK_ALWAYS_EAGER", "true")
+    reset_rate_limits()
     get_settings.cache_clear()
     yield
+    reset_rate_limits()
     get_settings.cache_clear()
 
 
