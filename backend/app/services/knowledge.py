@@ -17,7 +17,7 @@ class KnowledgeService:
         self.settings = get_settings()
         self.client = OpenAI(api_key=self.settings.openai_api_key) if self.settings.openai_api_key else None
 
-    async def upload(self, db: Session, user: User, file: UploadFile) -> UploadedDocument:
+    async def upload(self, db: Session, user: User, organization_id: UUID, file: UploadFile) -> UploadedDocument:
         user_dir = Path(self.settings.upload_dir) / str(user.id)
         user_dir.mkdir(parents=True, exist_ok=True)
         safe_name = Path(file.filename or "document.pdf").name
@@ -26,6 +26,7 @@ class KnowledgeService:
 
         document = UploadedDocument(
             owner_id=user.id,
+            organization_id=organization_id,
             filename=safe_name,
             content_type=file.content_type,
             storage_path=str(storage_path),
@@ -39,6 +40,7 @@ class KnowledgeService:
                 KnowledgeChunk(
                     document_id=document.id,
                     owner_id=user.id,
+                    organization_id=organization_id,
                     content=chunk,
                     chunk_index=index,
                     embedding=self._embed(chunk),
@@ -48,8 +50,8 @@ class KnowledgeService:
         db.refresh(document)
         return document
 
-    def answer(self, db: Session, user_id: UUID, question: str) -> tuple[str, list[str]]:
-        chunks = db.scalars(select(KnowledgeChunk).where(KnowledgeChunk.owner_id == user_id)).all()
+    def answer(self, db: Session, organization_id: UUID, question: str) -> tuple[str, list[str]]:
+        chunks = db.scalars(select(KnowledgeChunk).where(KnowledgeChunk.organization_id == organization_id)).all()
         ranked = self._rank(question, chunks)[:4]
         context = "\n\n".join(chunk.content for chunk in ranked)
         sources = [chunk.document.filename for chunk in ranked if chunk.document]

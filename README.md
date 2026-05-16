@@ -9,6 +9,7 @@ LeadPilot AI demonstrates a production-style B2B SaaS workflow: a sales rep subm
 ## Features
 
 - JWT authentication with register, login, and current-user endpoints
+- Organization-scoped multi-tenancy with owner, admin, and member roles
 - CRM lead management with status tracking, search, filtering, scoring, and lead detail views
 - AI email analyzer with structured output for summary, sentiment, urgency, category, score, buying intent, reply, and follow-up task
 - Multi-agent backend design: analyzer, scoring, reply, CRM, and task agents

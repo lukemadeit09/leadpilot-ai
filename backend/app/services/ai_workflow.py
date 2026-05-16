@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -17,7 +18,7 @@ class AILeadWorkflow:
         self.crm = CRMAgent()
         self.task_agent = TaskAgent()
 
-    def run(self, db: Session, user: User, payload: AnalyzeLeadRequest) -> tuple[Lead, LeadAnalysis, Task, object]:
+    def run(self, db: Session, user: User, organization_id: UUID, payload: AnalyzeLeadRequest) -> tuple[Lead, LeadAnalysis, Task, object]:
         raw_analysis = self.analyzer.analyze(payload.message)
         lead_score = self.scorer.score(payload.message, raw_analysis)
         suggested_reply = self.reply.draft(payload.message, raw_analysis)
@@ -38,7 +39,7 @@ class AILeadWorkflow:
         analysis_payload.recommended_action = action
         analysis_payload.follow_up_task = self._follow_up_title(status_value, payload.company)
 
-        lead = self._upsert_lead(db, user, payload, analysis_payload, status_value)
+        lead = self._upsert_lead(db, user, organization_id, payload, analysis_payload, status_value)
         db.flush()
         analysis = LeadAnalysis(lead_id=lead.id, **analysis_payload.model_dump())
         db.add(analysis)
@@ -46,6 +47,7 @@ class AILeadWorkflow:
         task_spec = self.task_agent.create_task(payload.message, analysis_payload)
         task = Task(
             owner_id=user.id,
+            organization_id=organization_id,
             lead_id=lead.id,
             title=task_spec["title"],
             description=task_spec["description"],
@@ -57,6 +59,7 @@ class AILeadWorkflow:
         activity = log_activity(
             db,
             owner_id=user.id,
+            organization_id=organization_id,
             lead_id=lead.id,
             action="email_analyzed",
             detail=f"AI analyzed lead and set pipeline status to {status_value}.",
@@ -69,12 +72,20 @@ class AILeadWorkflow:
         db.refresh(activity)
         return lead, analysis, task, activity
 
-    def _upsert_lead(self, db: Session, user: User, payload: AnalyzeLeadRequest, analysis: AnalysisPayload, status_value: str) -> Lead:
+    def _upsert_lead(
+        self,
+        db: Session,
+        user: User,
+        organization_id: UUID,
+        payload: AnalyzeLeadRequest,
+        analysis: AnalysisPayload,
+        status_value: str,
+    ) -> Lead:
         lead = None
         if payload.email:
-            lead = db.scalar(select(Lead).where(Lead.owner_id == user.id, Lead.email == str(payload.email)))
+            lead = db.scalar(select(Lead).where(Lead.organization_id == organization_id, Lead.email == str(payload.email)))
         if not lead:
-            lead = Lead(owner_id=user.id, message=payload.message)
+            lead = Lead(owner_id=user.id, organization_id=organization_id, message=payload.message)
             db.add(lead)
         lead.name = payload.name
         lead.email = str(payload.email) if payload.email else None
