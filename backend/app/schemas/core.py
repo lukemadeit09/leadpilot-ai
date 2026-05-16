@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models import AIJobStatus, DocumentStatus, LeadStatus, PlanType, TaskPriority, TaskStatus
+from app.models import AIJobStatus, DocumentStatus, LeadStatus, PlanType, SubscriptionStatus, TaskPriority, TaskStatus
 
 
 class UserCreate(BaseModel):
@@ -224,10 +224,25 @@ class PlanUpdate(BaseModel):
     plan: PlanType
 
 
+class BillingCheckoutRequest(BaseModel):
+    plan: PlanType
+
+
+class BillingCheckoutResponse(BaseModel):
+    checkout_url: str
+    session_id: str
+
+
+class BillingPortalResponse(BaseModel):
+    portal_url: str
+
+
 class UsageSummary(BaseModel):
     organization_id: UUID
     plan: PlanType
     plan_label: str
+    subscription_status: SubscriptionStatus
+    subscription_current_period_end: datetime | None
     monthly_limit: float
     organization_used: float
     user_used: float

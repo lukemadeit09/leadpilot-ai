@@ -1,6 +1,8 @@
 export type LeadStatus = "new" | "analyzed" | "qualified" | "contacted" | "follow_up" | "closed_won" | "closed_lost";
 export type TaskStatus = "pending" | "in_progress" | "completed" | "cancelled";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
+export type PlanType = "starter" | "pro" | "agency";
+export type SubscriptionStatus = "inactive" | "trialing" | "active" | "past_due" | "canceled" | "unpaid";
 
 export type User = {
   id: string;
@@ -72,8 +74,10 @@ export type DashboardMetrics = {
 
 export type BillingUsage = {
   organization_id: string;
-  plan: "starter" | "pro" | "agency";
+  plan: PlanType;
   plan_label: string;
+  subscription_status: SubscriptionStatus;
+  subscription_current_period_end?: string | null;
   monthly_limit: number;
   organization_used: number;
   user_used: number;
@@ -82,6 +86,15 @@ export type BillingUsage = {
   requests: number;
   tokens: number;
   month_start: string;
+};
+
+export type BillingCheckout = {
+  checkout_url: string;
+  session_id: string;
+};
+
+export type BillingPortal = {
+  portal_url: string;
 };
 
 export type AnalyzeLeadResponse = {

@@ -22,6 +22,9 @@ export default function LandingPage() {
               <Link href="/login" className="inline-flex items-center gap-2 rounded-md border border-line/80 bg-white/[0.025] px-5 py-3 text-sm font-semibold text-slate-200">
                 Sign in
               </Link>
+              <Link href="/pricing" className="inline-flex items-center gap-2 rounded-md border border-line/80 bg-white/[0.025] px-5 py-3 text-sm font-semibold text-slate-200">
+                View pricing
+              </Link>
             </div>
           </div>
           <div className="rounded-lg border border-line/80 bg-panel/95 p-5 shadow-glow">

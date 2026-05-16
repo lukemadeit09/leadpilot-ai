@@ -132,6 +132,8 @@ class AIUsageService:
             "organization_id": organization.id,
             "plan": plan.value,
             "plan_label": PLAN_LABELS[plan],
+            "subscription_status": organization.subscription_status.value,
+            "subscription_current_period_end": organization.subscription_current_period_end,
             "monthly_limit": float(monthly_limit),
             "organization_used": float(organization_used),
             "user_used": float(user_used),

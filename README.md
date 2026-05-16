@@ -13,7 +13,7 @@ LeadPilot AI demonstrates a production-style B2B SaaS workflow: a sales rep subm
 - CRM lead management with status tracking, search, filtering, scoring, and lead detail views
 - AI email analyzer with structured output for summary, sentiment, urgency, category, score, buying intent, reply, and follow-up task
 - AI usage tracking with Starter, Pro, and Agency monthly limits plus simple/complex model routing
-- Billing foundation with plan catalog, owner/admin plan updates, and dashboard credit visibility
+- Stripe billing foundation with Checkout, billing portal, signed webhooks, plan catalog, and dashboard credit visibility
 - Async AI lead analysis jobs with Celery, Redis, durable status tracking, retries, and frontend polling
 - Multi-agent backend design: analyzer, scoring, reply, CRM, and task agents
 - Agentic workflow that persists lead, analysis, task, and activity log in one transaction
@@ -150,6 +150,12 @@ npm run dev
 - `OPENAI_COMPLEX_MODEL`: stronger model for multi-step lead analysis workflows
 - `OPENAI_EMBEDDING_MODEL`: embedding model for document chunks
 - `CORS_ORIGINS`: comma-separated frontend origins
+- `FRONTEND_URL`: public frontend URL used for Stripe return links
+- `STRIPE_SECRET_KEY`: backend-only Stripe API key
+- `STRIPE_WEBHOOK_SECRET`: Stripe webhook signing secret
+- `STRIPE_STARTER_PRICE_ID`: Stripe price id for Starter
+- `STRIPE_PRO_PRICE_ID`: Stripe price id for Pro
+- `STRIPE_AGENCY_PRICE_ID`: Stripe price id for Agency
 - `NEXT_PUBLIC_API_URL`: browser-facing backend URL
 
 ## API Overview
@@ -169,6 +175,9 @@ npm run dev
 - `POST /ai/generate-reply`
 - `GET /billing/plans`
 - `GET /billing/usage`
+- `POST /billing/checkout`
+- `POST /billing/portal`
+- `POST /billing/webhook`
 - `PATCH /billing/plan`
 - `GET /tasks`
 - `POST /tasks`
