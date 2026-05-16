@@ -63,6 +63,8 @@ Security hardening details are available in [docs/SECURITY.md](docs/SECURITY.md)
 
 Business integration setup is available in [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md).
 
+Observability and monitoring details are available in [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md).
+
 ## Folder Structure
 
 ```text
@@ -182,13 +184,23 @@ CI uses mock/test environment variables and does not require real OpenAI, Stripe
 - `RATE_LIMIT_PUBLIC_PER_MINUTE`: public integration endpoint rate limit
 - `FAILED_LOGIN_LOCK_THRESHOLD`: failed login attempts before temporary lockout
 - `FAILED_LOGIN_LOCK_MINUTES`: temporary lockout duration
+- `LOG_LEVEL`: backend structured logging level
+- `SENTRY_DSN`: optional backend Sentry DSN
+- `SENTRY_TRACES_SAMPLE_RATE`: optional backend Sentry tracing sample rate
 - `NEXT_PUBLIC_API_URL`: browser-facing backend URL
+- `NEXT_PUBLIC_APP_ENV`: browser-safe frontend environment name
+- `NEXT_PUBLIC_SENTRY_DSN`: optional browser-safe frontend Sentry DSN
+- `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE`: optional frontend Sentry tracing sample rate
+- `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`: optional source map upload configuration for Sentry builds
 
 ## API Overview
 
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/me`
+- `GET /health`
+- `GET /live`
+- `GET /ready`
 - `GET /dashboard/metrics`
 - `GET /leads`
 - `POST /leads`

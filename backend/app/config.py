@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     rate_limit_public_per_minute: int = 120
     failed_login_lock_threshold: int = 5
     failed_login_lock_minutes: int = 15
+    log_level: str = "INFO"
+    sentry_dsn: str | None = None
+    sentry_traces_sample_rate: float = 0.0
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
