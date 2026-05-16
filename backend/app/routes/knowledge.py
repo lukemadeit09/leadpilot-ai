@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models import OrganizationMember, UploadedDocument, User
 from app.schemas import KnowledgeAskRequest, KnowledgeAskResponse, KnowledgeDocumentRead
 from app.services.activity import log_activity
+from app.services.ai_usage import AIUsageService
 from app.services.knowledge import KnowledgeService
 
 router = APIRouter(prefix="/knowledge", tags=["knowledgebase"])
@@ -46,7 +47,11 @@ def ask_knowledge(
     current_user: User = Depends(get_current_user),
     membership: OrganizationMember = Depends(get_current_organization),
 ) -> KnowledgeAskResponse:
-    answer, sources = KnowledgeService().answer(db, membership.organization_id, payload.question)
+    usage = AIUsageService()
+    model = usage.model_for("simple")
+    usage.ensure_within_limit(db, membership, "/knowledge/ask", payload.question, model, output_token_budget=700)
+    answer, sources = KnowledgeService().answer(db, membership.organization_id, payload.question, model)
     log_activity(db, current_user.id, membership.organization_id, "knowledge_question", f"Asked knowledge base: {payload.question}")
     db.commit()
+    usage.record_usage(db, current_user.id, membership.organization_id, "/knowledge/ask", model, payload.question, answer)
     return KnowledgeAskResponse(answer=answer, sources=list(dict.fromkeys(sources)))

@@ -12,6 +12,7 @@ LeadPilot AI demonstrates a production-style B2B SaaS workflow: a sales rep subm
 - Organization-scoped multi-tenancy with owner, admin, and member roles
 - CRM lead management with status tracking, search, filtering, scoring, and lead detail views
 - AI email analyzer with structured output for summary, sentiment, urgency, category, score, buying intent, reply, and follow-up task
+- AI usage tracking with Starter, Pro, and Agency monthly limits plus simple/complex model routing
 - Multi-agent backend design: analyzer, scoring, reply, CRM, and task agents
 - Agentic workflow that persists lead, analysis, task, and activity log in one transaction
 - RAG-style knowledge base with PDF/text uploads, chunking, embeddings when OpenAI is configured, and fallback local search
@@ -135,6 +136,8 @@ npm run dev
 - `ACCESS_TOKEN_EXPIRE_MINUTES`: access token lifetime
 - `OPENAI_API_KEY`: optional OpenAI API key
 - `OPENAI_MODEL`: chat model for AI agents
+- `OPENAI_SIMPLE_MODEL`: lower-cost model for lightweight AI tasks such as reply generation
+- `OPENAI_COMPLEX_MODEL`: stronger model for multi-step lead analysis workflows
 - `OPENAI_EMBEDDING_MODEL`: embedding model for document chunks
 - `CORS_ORIGINS`: comma-separated frontend origins
 - `NEXT_PUBLIC_API_URL`: browser-facing backend URL

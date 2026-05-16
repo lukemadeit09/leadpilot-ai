@@ -50,7 +50,7 @@ class KnowledgeService:
         db.refresh(document)
         return document
 
-    def answer(self, db: Session, organization_id: UUID, question: str) -> tuple[str, list[str]]:
+    def answer(self, db: Session, organization_id: UUID, question: str, model: str | None = None) -> tuple[str, list[str]]:
         chunks = db.scalars(select(KnowledgeChunk).where(KnowledgeChunk.organization_id == organization_id)).all()
         ranked = self._rank(question, chunks)[:4]
         context = "\n\n".join(chunk.content for chunk in ranked)
@@ -58,7 +58,7 @@ class KnowledgeService:
 
         if self.client and context:
             response = self.client.chat.completions.create(
-                model=self.settings.openai_model,
+                model=model or self.settings.openai_model,
                 messages=[
                     {"role": "system", "content": "Answer using only the provided company knowledge. Be concise and practical."},
                     {"role": "user", "content": f"Question: {question}\n\nKnowledge:\n{context}"},

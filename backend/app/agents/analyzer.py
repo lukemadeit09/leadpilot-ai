@@ -3,12 +3,12 @@ from app.schemas import AnalysisPayload
 
 
 class AnalyzerAgent(BaseAgent):
-    def analyze(self, message: str) -> dict:
+    def analyze(self, message: str, model: str | None = None) -> dict:
         system = (
             "You are an enterprise sales operations analyst. Return strict JSON with "
             "summary, sentiment, urgency, category, pain_points, and buying_intent."
         )
-        result = self.complete_json(system, message)
+        result = self.complete_json(system, message, model)
         if result:
             return result
 
@@ -26,18 +26,18 @@ class AnalyzerAgent(BaseAgent):
 
 
 class ScoringAgent(BaseAgent):
-    def score(self, message: str, analysis: dict) -> int:
+    def score(self, message: str, analysis: dict, model: str | None = None) -> int:
         system = "Score this lead from 1 to 100. Return JSON: {\"lead_score\": number}."
-        result = self.complete_json(system, f"Message: {message}\nAnalysis: {analysis}")
+        result = self.complete_json(system, f"Message: {message}\nAnalysis: {analysis}", model)
         if result and isinstance(result.get("lead_score"), int):
             return max(1, min(result["lead_score"], 100))
         return self.keyword_score(message)
 
 
 class ReplyAgent(BaseAgent):
-    def draft(self, message: str, analysis: dict, tone: str = "professional") -> str:
+    def draft(self, message: str, analysis: dict, tone: str = "professional", model: str | None = None) -> str:
         system = f"Draft a concise {tone} B2B sales reply. Return JSON: {{\"suggested_reply\": string}}."
-        result = self.complete_json(system, f"Customer message: {message}\nAnalysis: {analysis}")
+        result = self.complete_json(system, f"Customer message: {message}\nAnalysis: {analysis}", model)
         if result and result.get("suggested_reply"):
             return str(result["suggested_reply"])
         return (

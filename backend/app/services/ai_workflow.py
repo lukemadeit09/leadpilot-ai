@@ -11,7 +11,8 @@ from app.services.activity import log_activity
 
 
 class AILeadWorkflow:
-    def __init__(self) -> None:
+    def __init__(self, model: str | None = None) -> None:
+        self.model = model
         self.analyzer = AnalyzerAgent()
         self.scorer = ScoringAgent()
         self.reply = ReplyAgent()
@@ -19,9 +20,9 @@ class AILeadWorkflow:
         self.task_agent = TaskAgent()
 
     def run(self, db: Session, user: User, organization_id: UUID, payload: AnalyzeLeadRequest) -> tuple[Lead, LeadAnalysis, Task, object]:
-        raw_analysis = self.analyzer.analyze(payload.message)
-        lead_score = self.scorer.score(payload.message, raw_analysis)
-        suggested_reply = self.reply.draft(payload.message, raw_analysis)
+        raw_analysis = self.analyzer.analyze(payload.message, self.model)
+        lead_score = self.scorer.score(payload.message, raw_analysis, self.model)
+        suggested_reply = self.reply.draft(payload.message, raw_analysis, model=self.model)
 
         analysis_payload = AnalysisPayload(
             summary=raw_analysis.get("summary", "Customer message analyzed."),

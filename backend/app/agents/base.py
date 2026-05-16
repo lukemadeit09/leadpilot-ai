@@ -12,11 +12,11 @@ class BaseAgent:
         self.settings = get_settings()
         self.client = OpenAI(api_key=self.settings.openai_api_key) if self.settings.openai_api_key else None
 
-    def complete_json(self, system: str, user: str) -> dict[str, Any] | None:
+    def complete_json(self, system: str, user: str, model: str | None = None) -> dict[str, Any] | None:
         if not self.client:
             return None
         response = self.client.chat.completions.create(
-            model=self.settings.openai_model,
+            model=model or self.settings.openai_model,
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": system},

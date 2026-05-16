@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 1440
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
+    openai_simple_model: str = "gpt-4.1-mini"
+    openai_complex_model: str = "gpt-4.1"
     openai_embedding_model: str = "text-embedding-3-small"
     cors_origins: str = "http://localhost:3000"
     upload_dir: Path = Path("uploads")
