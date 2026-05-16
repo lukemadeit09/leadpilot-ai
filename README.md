@@ -14,6 +14,7 @@ LeadPilot AI demonstrates a production-style B2B SaaS workflow: a sales rep subm
 - AI email analyzer with structured output for summary, sentiment, urgency, category, score, buying intent, reply, and follow-up task
 - AI usage tracking with Starter, Pro, and Agency monthly limits plus simple/complex model routing
 - Billing foundation with plan catalog, owner/admin plan updates, and dashboard credit visibility
+- Async AI lead analysis jobs with Celery, Redis, durable status tracking, retries, and frontend polling
 - Multi-agent backend design: analyzer, scoring, reply, CRM, and task agents
 - Agentic workflow that persists lead, analysis, task, and activity log in one transaction
 - RAG-style knowledge base with PDF/text uploads, chunking, embeddings when OpenAI is configured, and fallback local search
@@ -48,6 +49,8 @@ More detail is available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 Architecture and runtime sequence diagrams are available in [docs/DIAGRAMS.md](docs/DIAGRAMS.md).
 
 Billing and usage quota details are available in [docs/BILLING.md](docs/BILLING.md).
+
+Async worker details are available in [docs/ASYNC_WORKERS.md](docs/ASYNC_WORKERS.md).
 
 ## Folder Structure
 
@@ -157,6 +160,8 @@ npm run dev
 - `PATCH /leads/{id}`
 - `DELETE /leads/{id}`
 - `POST /ai/analyze-lead`
+- `POST /ai/analyze-lead/jobs`
+- `GET /ai/jobs/{id}`
 - `POST /ai/generate-reply`
 - `GET /billing/plans`
 - `GET /billing/usage`

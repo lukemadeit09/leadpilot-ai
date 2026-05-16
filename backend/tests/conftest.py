@@ -4,6 +4,7 @@ import os
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["OPENAI_API_KEY"] = ""
 os.environ["JWT_SECRET_KEY"] = "test-secret-key"
+os.environ["CELERY_TASK_ALWAYS_EAGER"] = "true"
 
 import pytest
 from fastapi.testclient import TestClient
@@ -20,6 +21,7 @@ from app.main import app
 def clear_settings_cache(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
     monkeypatch.setenv("OPENAI_API_KEY", "")
     monkeypatch.setenv("JWT_SECRET_KEY", "test-secret-key")
+    monkeypatch.setenv("CELERY_TASK_ALWAYS_EAGER", "true")
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()

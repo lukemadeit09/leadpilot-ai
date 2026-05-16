@@ -40,6 +40,26 @@ services:
       redis:
         condition: service_started
 
+  worker:
+    build:
+      context: ./backend
+    command: celery -A app.worker.celery_app worker --loglevel=INFO --concurrency=2
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://leadpilot:leadpilot@postgres:5432/leadpilot
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
   frontend:
     build:
       context: ./frontend

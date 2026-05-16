@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models import LeadStatus, PlanType, TaskPriority, TaskStatus
+from app.models import AIJobStatus, LeadStatus, PlanType, TaskPriority, TaskStatus
 
 
 class UserCreate(BaseModel):
@@ -138,6 +138,20 @@ class AnalyzeLeadResponse(BaseModel):
     analysis: LeadAnalysisRead
     task: TaskRead
     activity: ActivityRead
+
+
+class AIJobRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    status: AIJobStatus
+    endpoint_used: str
+    attempts: int
+    max_attempts: int
+    error_message: str | None
+    result_payload: dict | None
+    created_at: datetime
+    updated_at: datetime
 
 
 class ReplyRequest(BaseModel):
