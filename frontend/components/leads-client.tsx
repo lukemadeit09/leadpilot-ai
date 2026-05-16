@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { Plus, Search } from "lucide-react";
 import { FormEvent, useCallback, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
-import { Badge, buttonClass, EmptyState, Field, inputClass, LoadingRows } from "@/components/ui";
+import { Badge, buttonClass, EmptyState, Field, inputClass, LoadingRows, PageHeader, Panel, tableCellClass, tableHeaderClass } from "@/components/ui";
 import { api, statusLabel } from "@/lib/api";
 import { useAsyncData } from "@/hooks/use-api";
 import type { Lead, LeadStatus } from "@/types";
@@ -38,24 +39,37 @@ export function LeadsClient() {
 
   return (
     <AppShell>
-      <div className="mb-6">
-        <p className="text-sm text-mint">CRM</p>
-        <h1 className="text-3xl font-semibold text-white">Leads</h1>
-      </div>
-      <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
-        <form onSubmit={createLead} className="space-y-4 rounded-lg border border-line bg-panel p-5">
-          <h2 className="text-lg font-semibold text-white">Create lead</h2>
+      <PageHeader
+        eyebrow="CRM"
+        title="Leads"
+        description="Create, qualify, search, and inspect inbound opportunities as they move through the AI-assisted pipeline."
+      />
+      <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
+        <form onSubmit={createLead} className="space-y-4 rounded-lg border border-line/80 bg-panel/95 p-5 shadow-sm shadow-black/20">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Create lead</h2>
+            <p className="mt-1 text-sm text-slate-500">Add a lead manually before analysis.</p>
+          </div>
           <Field label="Name"><input name="name" className={inputClass} /></Field>
           <Field label="Email"><input name="email" type="email" className={inputClass} /></Field>
           <Field label="Company"><input name="company" className={inputClass} /></Field>
           <Field label="Message"><textarea name="message" className={`${inputClass} min-h-28`} required /></Field>
-          <button className={buttonClass} disabled={creating}>{creating ? "Creating..." : "Create lead"}</button>
+          <button className={`${buttonClass} w-full`} disabled={creating}>
+            <Plus size={16} />
+            {creating ? "Creating..." : "Create lead"}
+          </button>
         </form>
-        <section className="rounded-lg border border-line bg-panel p-5">
-          <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <h2 className="text-lg font-semibold text-white">Pipeline records</h2>
-            <input className={`${inputClass} md:max-w-xs`} placeholder="Search leads" value={query} onChange={(event) => setQuery(event.target.value)} />
-          </div>
+        <Panel
+          title="Pipeline records"
+          description="Sorted by most recent activity"
+          action={
+            <div className="relative w-full sm:w-80">
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+              <input className={`${inputClass} pl-9`} placeholder="Search name, company, email" value={query} onChange={(event) => setQuery(event.target.value)} />
+            </div>
+          }
+        >
+          <div className="p-5">
           {error && <p className="text-sm text-rose-200">{error}</p>}
           {loading || !data ? (
             <LoadingRows />
@@ -64,33 +78,34 @@ export function LeadsClient() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-line text-slate-500">
+                <thead className={tableHeaderClass}>
                   <tr>
-                    <th className="py-3">Lead</th>
-                    <th>Company</th>
-                    <th>Status</th>
-                    <th>Score</th>
-                    <th>Urgency</th>
+                    <th className={tableCellClass}>Lead</th>
+                    <th className={tableCellClass}>Company</th>
+                    <th className={tableCellClass}>Status</th>
+                    <th className={tableCellClass}>Score</th>
+                    <th className={tableCellClass}>Urgency</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((lead) => (
-                    <tr key={lead.id} className="border-b border-line/70">
-                      <td className="py-3">
+                    <tr key={lead.id} className="border-b border-line/60 transition hover:bg-white/[0.025]">
+                      <td className={tableCellClass}>
                         <Link href={`/leads/${lead.id}`} className="font-medium text-white hover:text-mint">{lead.name || lead.email || "Unnamed lead"}</Link>
                         <div className="text-xs text-slate-500">{lead.email}</div>
                       </td>
-                      <td className="text-slate-300">{lead.company || "Unknown"}</td>
-                      <td><Badge tone={statusTone(lead.status)}>{statusLabel(lead.status)}</Badge></td>
-                      <td className="font-semibold text-white">{lead.score}</td>
-                      <td className="capitalize text-slate-300">{lead.urgency || "not set"}</td>
+                      <td className={`${tableCellClass} text-slate-300`}>{lead.company || "Unknown"}</td>
+                      <td className={tableCellClass}><Badge tone={statusTone(lead.status)}>{statusLabel(lead.status)}</Badge></td>
+                      <td className={`${tableCellClass} font-semibold text-white`}>{lead.score}</td>
+                      <td className={`${tableCellClass} capitalize text-slate-300`}>{lead.urgency || "not set"}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-        </section>
+          </div>
+        </Panel>
       </div>
     </AppShell>
   );

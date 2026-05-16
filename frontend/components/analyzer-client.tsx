@@ -4,7 +4,7 @@ import { Send } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
-import { Badge, buttonClass, Field, inputClass } from "@/components/ui";
+import { Badge, buttonClass, EmptyState, Field, inputClass, PageHeader, Panel } from "@/components/ui";
 import { api } from "@/lib/api";
 import type { AnalyzeLeadResponse } from "@/types";
 
@@ -38,12 +38,17 @@ export function AnalyzerClient() {
 
   return (
     <AppShell>
-      <div className="mb-6">
-        <p className="text-sm text-mint">AI operations</p>
-        <h1 className="text-3xl font-semibold text-white">Email analyzer</h1>
-      </div>
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <form onSubmit={submit} className="space-y-4 rounded-lg border border-line bg-panel p-5">
+      <PageHeader
+        eyebrow="AI operations"
+        title="Email analyzer"
+        description="Submit an inbound customer message and let the agent workflow update the CRM, draft a reply, create a task, and log activity."
+      />
+      <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
+        <form onSubmit={submit} className="space-y-4 rounded-lg border border-line/80 bg-panel/95 p-5 shadow-sm shadow-black/20">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Inbound message</h2>
+            <p className="mt-1 text-sm text-slate-500">Capture context before running the agent workflow.</p>
+          </div>
           <Field label="Lead name"><input name="name" className={inputClass} placeholder="Jordan Lee" /></Field>
           <Field label="Email"><input name="email" type="email" className={inputClass} placeholder="jordan@company.com" /></Field>
           <Field label="Company"><input name="company" className={inputClass} placeholder="Acme Operations" /></Field>
@@ -56,49 +61,49 @@ export function AnalyzerClient() {
             />
           </Field>
           {error && <p className="rounded-md border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</p>}
-          <button className={buttonClass} disabled={loading}>
+          <button className={`${buttonClass} w-full`} disabled={loading}>
             <Send size={16} />
             {loading ? "Analyzing..." : "Run agentic workflow"}
           </button>
         </form>
-        <section className="rounded-lg border border-line bg-panel p-5">
+        <Panel title="Workflow output" description="Validated AI analysis and CRM side effects">
+          <div className="p-5">
           {!result ? (
-            <div className="grid h-full min-h-96 place-items-center rounded-md border border-dashed border-line text-center">
-              <div>
-                <p className="font-semibold text-white">Awaiting customer message</p>
-                <p className="mt-2 max-w-md text-sm text-slate-400">The workflow will analyze the lead, update CRM status, save the analysis, create a task, and log activity.</p>
-              </div>
-            </div>
+            <EmptyState title="Awaiting customer message" detail="The workflow will analyze the lead, update CRM status, save the analysis, create a task, and log activity." />
           ) : (
             <div className="space-y-5">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-white">Analysis result</h2>
-                <div className="rounded-md bg-mint px-3 py-1 text-sm font-semibold text-ink">{result.analysis.lead_score}/100</div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">Analysis result</p>
+                  <h2 className="mt-1 text-xl font-semibold text-white">{result.lead.company || result.lead.name || "Analyzed lead"}</h2>
+                </div>
+                <div className="rounded-md border border-mint/30 bg-mint/15 px-3 py-1.5 text-sm font-semibold text-mint">{result.analysis.lead_score}/100</div>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <Badge tone="good">{result.analysis.sentiment}</Badge>
                 <Badge tone="warn">{result.analysis.urgency}</Badge>
                 <Badge tone="info">{result.analysis.category}</Badge>
               </div>
-              <div className="rounded-md border border-line bg-ink p-4">
+              <div className="rounded-md border border-line/70 bg-ink/70 p-4">
                 <p className="text-sm text-slate-500">Summary</p>
                 <p className="mt-2 text-sm leading-6">{result.analysis.summary}</p>
               </div>
-              <div className="rounded-md border border-line bg-ink p-4">
+              <div className="rounded-md border border-line/70 bg-ink/70 p-4">
                 <p className="text-sm text-slate-500">Recommended action</p>
                 <p className="mt-2 text-sm leading-6">{result.analysis.recommended_action}</p>
               </div>
-              <div className="rounded-md border border-line bg-ink p-4">
+              <div className="rounded-md border border-line/70 bg-ink/70 p-4">
                 <p className="text-sm text-slate-500">Suggested reply</p>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{result.analysis.suggested_reply}</p>
               </div>
-              <div className="rounded-md border border-line bg-ink p-4">
+              <div className="rounded-md border border-line/70 bg-ink/70 p-4">
                 <p className="text-sm text-slate-500">Created task</p>
                 <p className="mt-2 text-sm leading-6">{result.task.title}</p>
               </div>
             </div>
           )}
-        </section>
+          </div>
+        </Panel>
       </div>
     </AppShell>
   );

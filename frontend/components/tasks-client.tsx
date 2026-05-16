@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 
 import { AppShell } from "@/components/app-shell";
-import { Badge, EmptyState, LoadingRows } from "@/components/ui";
+import { Badge, EmptyState, LoadingRows, PageHeader, Panel } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAsyncData } from "@/hooks/use-api";
 import type { Task } from "@/types";
@@ -13,11 +13,13 @@ export function TasksClient() {
   const { data, loading, error } = useAsyncData(loader);
   return (
     <AppShell>
-      <div className="mb-6">
-        <p className="text-sm text-mint">Execution</p>
-        <h1 className="text-3xl font-semibold text-white">Tasks</h1>
-      </div>
-      <section className="rounded-lg border border-line bg-panel p-5">
+      <PageHeader
+        eyebrow="Execution"
+        title="Tasks"
+        description="Track the operational follow-ups created manually or by the AI workflow."
+      />
+      <Panel title="Follow-up queue" description="Prioritized sales work generated from lead activity">
+        <div className="p-5">
         {error && <p className="text-sm text-rose-200">{error}</p>}
         {loading || !data ? (
           <LoadingRows />
@@ -26,7 +28,7 @@ export function TasksClient() {
         ) : (
           <div className="space-y-3">
             {data.map((task) => (
-              <div key={task.id} className="flex flex-col justify-between gap-3 rounded-md border border-line bg-ink p-4 md:flex-row md:items-center">
+              <div key={task.id} className="flex flex-col justify-between gap-3 rounded-md border border-line/70 bg-ink/70 p-4 transition hover:bg-white/[0.025] md:flex-row md:items-center">
                 <div>
                   <p className="font-medium text-white">{task.title}</p>
                   <p className="mt-1 text-sm text-slate-400">{task.description}</p>
@@ -39,7 +41,8 @@ export function TasksClient() {
             ))}
           </div>
         )}
-      </section>
+        </div>
+      </Panel>
     </AppShell>
   );
 }

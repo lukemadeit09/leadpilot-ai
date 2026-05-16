@@ -13,9 +13,14 @@
 body {
   margin: 0;
   background:
-    linear-gradient(120deg, rgba(61, 220, 151, 0.08), transparent 28%),
-    linear-gradient(180deg, #08110f 0%, #0b1110 48%, #09100e 100%);
+    radial-gradient(circle at 18% -10%, rgba(54, 211, 153, 0.08), transparent 30%),
+    linear-gradient(180deg, #080d0c 0%, #0a100f 48%, #080d0c 100%);
   color: #e5e7eb;
+  font-feature-settings:
+    "cv02",
+    "cv03",
+    "cv04",
+    "cv11";
 }
 
 ::selection {
@@ -24,4 +29,10 @@ body {
 
 table {
   border-collapse: collapse;
+}
+
+input,
+textarea,
+button {
+  font: inherit;
 }

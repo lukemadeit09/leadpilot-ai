@@ -37,10 +37,11 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <form onSubmit={submit} className="w-full max-w-md space-y-4 rounded-lg border border-line bg-panel p-6 shadow-glow">
+    <form onSubmit={submit} className="w-full max-w-md space-y-5 rounded-lg border border-line/80 bg-panel/95 p-6 shadow-glow">
       <div>
-        <h1 className="text-2xl font-semibold text-white">{mode === "login" ? "Sign in" : "Create workspace"}</h1>
-        <p className="mt-2 text-sm text-slate-400">Access the LeadPilot AI revenue operations dashboard.</p>
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-steel">LeadPilot AI</p>
+        <h1 className="mt-2 text-2xl font-semibold text-white">{mode === "login" ? "Sign in" : "Create workspace"}</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-400">Access the revenue operations dashboard and AI CRM workflow.</p>
       </div>
       {mode === "register" && (
         <Field label="Full name">
@@ -54,7 +55,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         <input name="password" type="password" className={inputClass} required minLength={8} />
       </Field>
       {error && <p className="rounded-md border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-100">{error}</p>}
-      <button className={buttonClass} disabled={loading}>
+      <button className={`${buttonClass} w-full`} disabled={loading}>
         {loading ? "Working..." : mode === "login" ? "Sign in" : "Create account"}
         <ArrowRight size={16} />
       </button>
