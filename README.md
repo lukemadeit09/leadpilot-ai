@@ -42,6 +42,8 @@ flowchart LR
 
 More detail is available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+Architecture and runtime sequence diagrams are available in [docs/DIAGRAMS.md](docs/DIAGRAMS.md).
+
 ## Folder Structure
 
 ```text
