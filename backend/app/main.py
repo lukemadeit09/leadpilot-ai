@@ -2,8 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.middleware.security_headers import add_security_headers
 from app.models import *  # noqa: F403
-from app.routes import activity, ai, auth, billing, knowledge, leads, tasks
+from app.routes import activity, ai, auth, billing, integrations, knowledge, leads, tasks
 
 settings = get_settings()
 
@@ -17,9 +18,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-LeadPilot-Key", "Stripe-Signature"],
 )
+app.middleware("http")(add_security_headers)
 
 
 @app.on_event("startup")
@@ -37,6 +39,7 @@ app.include_router(leads.dashboard_router)
 app.include_router(leads.router)
 app.include_router(ai.router)
 app.include_router(billing.router)
+app.include_router(integrations.router)
 app.include_router(tasks.router)
 app.include_router(knowledge.router)
 app.include_router(activity.router)

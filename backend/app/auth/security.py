@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config import get_settings
+from app.config import Settings, get_settings
 from app.database import get_db
 from app.models import OrganizationMember, OrganizationRole, User
 
@@ -26,8 +26,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(user_id: UUID) -> str:
     settings = get_settings()
+    if settings.app_env == "production" and settings.jwt_secret_key == Settings.model_fields["jwt_secret_key"].default:
+        raise RuntimeError("JWT_SECRET_KEY must be configured in production")
     expires = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
-    payload = {"sub": str(user_id), "exp": expires}
+    payload = {"sub": str(user_id), "exp": expires, "iat": datetime.now(timezone.utc), "iss": settings.jwt_issuer}
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
@@ -39,7 +41,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm], issuer=settings.jwt_issuer)
         subject = payload.get("sub")
         if not subject:
             raise credentials_error

@@ -18,6 +18,7 @@ LeadPilot AI demonstrates a production-style B2B SaaS workflow: a sales rep subm
 - Multi-agent backend design: analyzer, scoring, reply, CRM, and task agents
 - Agentic workflow that persists lead, analysis, task, and activity log in one transaction
 - RAG knowledge base with PDF/text uploads, background chunking, embeddings, semantic search, pgvector-ready storage, and citations
+- Security hardening with rate limits, security headers, upload validation, failed-login tracking, audit logs, and hashed organization API keys
 - Dashboard metrics, pipeline chart, activity timeline, task queue, and modern dark SaaS UI
 - Dockerized frontend, backend, PostgreSQL, and Redis
 - Environment-variable based configuration with no committed secrets
@@ -55,6 +56,8 @@ Billing and usage quota details are available in [docs/BILLING.md](docs/BILLING.
 Async worker details are available in [docs/ASYNC_WORKERS.md](docs/ASYNC_WORKERS.md).
 
 RAG knowledge base details are available in [docs/RAG.md](docs/RAG.md).
+
+Security hardening details are available in [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Folder Structure
 
@@ -143,6 +146,7 @@ npm run dev
 - `DATABASE_URL`: PostgreSQL connection string
 - `REDIS_URL`: Redis connection string
 - `JWT_SECRET_KEY`: signing secret for access tokens
+- `JWT_ISSUER`: issuer claim expected in JWT access tokens
 - `ACCESS_TOKEN_EXPIRE_MINUTES`: access token lifetime
 - `OPENAI_API_KEY`: optional OpenAI API key
 - `OPENAI_MODEL`: chat model for AI agents
@@ -150,6 +154,13 @@ npm run dev
 - `OPENAI_COMPLEX_MODEL`: stronger model for multi-step lead analysis workflows
 - `OPENAI_EMBEDDING_MODEL`: embedding model for document chunks
 - `CORS_ORIGINS`: comma-separated frontend origins
+- `MAX_UPLOAD_BYTES`: maximum knowledge base upload size
+- `RATE_LIMIT_AUTH_PER_MINUTE`: auth endpoint rate limit
+- `RATE_LIMIT_AI_PER_MINUTE`: AI endpoint rate limit
+- `RATE_LIMIT_BILLING_PER_MINUTE`: billing endpoint rate limit
+- `RATE_LIMIT_PUBLIC_PER_MINUTE`: public integration endpoint rate limit
+- `FAILED_LOGIN_LOCK_THRESHOLD`: failed login attempts before temporary lockout
+- `FAILED_LOGIN_LOCK_MINUTES`: temporary lockout duration
 - `NEXT_PUBLIC_API_URL`: browser-facing backend URL
 
 ## API Overview
@@ -170,6 +181,10 @@ npm run dev
 - `GET /billing/plans`
 - `GET /billing/usage`
 - `PATCH /billing/plan`
+- `POST /integrations/api-keys`
+- `GET /integrations/api-keys`
+- `DELETE /integrations/api-keys/{id}`
+- `POST /integrations/public/leads`
 - `GET /tasks`
 - `POST /tasks`
 - `PATCH /tasks/{id}`

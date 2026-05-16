@@ -14,7 +14,7 @@ class UserCreate(BaseModel):
 
 class UserLogin(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=1, max_length=128)
 
 
 class UserRead(BaseModel):
@@ -35,10 +35,10 @@ class Token(BaseModel):
 
 
 class LeadBase(BaseModel):
-    name: str | None = None
+    name: str | None = Field(default=None, max_length=255)
     email: EmailStr | None = None
-    company: str | None = None
-    message: str = Field(min_length=5)
+    company: str | None = Field(default=None, max_length=255)
+    message: str = Field(min_length=5, max_length=20_000)
 
 
 class LeadCreate(LeadBase):
@@ -49,7 +49,7 @@ class LeadUpdate(BaseModel):
     name: str | None = None
     email: EmailStr | None = None
     company: str | None = None
-    message: str | None = None
+    message: str | None = Field(default=None, min_length=5, max_length=20_000)
     status: LeadStatus | None = None
     score: int | None = Field(default=None, ge=0, le=100)
     sentiment: str | None = None
@@ -69,16 +69,16 @@ class LeadRead(LeadBase):
 
 
 class AnalysisPayload(BaseModel):
-    summary: str
-    sentiment: str
-    urgency: str
-    category: str
+    summary: str = Field(max_length=2_000)
+    sentiment: str = Field(max_length=50)
+    urgency: str = Field(max_length=50)
+    category: str = Field(max_length=120)
     lead_score: int = Field(ge=1, le=100)
     pain_points: list[str] = Field(default_factory=list)
-    buying_intent: str
-    recommended_action: str
-    suggested_reply: str
-    follow_up_task: str
+    buying_intent: str = Field(max_length=80)
+    recommended_action: str = Field(max_length=2_000)
+    suggested_reply: str = Field(max_length=4_000)
+    follow_up_task: str = Field(max_length=1_000)
 
 
 class AnalyzeLeadRequest(LeadBase):
@@ -155,8 +155,8 @@ class AIJobRead(BaseModel):
 
 
 class ReplyRequest(BaseModel):
-    message: str = Field(min_length=5)
-    tone: str = "professional"
+    message: str = Field(min_length=5, max_length=20_000)
+    tone: str = Field(default="professional", max_length=50)
 
 
 class ReplyResponse(BaseModel):
@@ -186,11 +186,11 @@ class KnowledgeDocumentRead(BaseModel):
 
 
 class KnowledgeAskRequest(BaseModel):
-    question: str = Field(min_length=4)
+    question: str = Field(min_length=4, max_length=2_000)
 
 
 class KnowledgeSearchRequest(BaseModel):
-    query: str = Field(min_length=3)
+    query: str = Field(min_length=3, max_length=2_000)
     limit: int = Field(default=5, ge=1, le=10)
 
 
@@ -222,6 +222,36 @@ class PlanRead(BaseModel):
 
 class PlanUpdate(BaseModel):
     plan: PlanType
+
+
+class APIKeyCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+
+
+class APIKeyCreated(BaseModel):
+    id: UUID
+    name: str
+    key_prefix: str
+    api_key: str
+    created_at: datetime
+
+
+class APIKeyRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    key_prefix: str
+    last_used_at: datetime | None
+    revoked_at: datetime | None
+    created_at: datetime
+
+
+class PublicLeadCreate(BaseModel):
+    name: str | None = Field(default=None, max_length=255)
+    email: EmailStr | None = None
+    company: str | None = Field(default=None, max_length=255)
+    message: str = Field(min_length=5, max_length=20_000)
 
 
 class UsageSummary(BaseModel):

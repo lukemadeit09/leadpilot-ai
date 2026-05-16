@@ -11,8 +11,9 @@ from app.schemas import AIJobRead, AnalyzeLeadRequest, AnalyzeLeadResponse, Repl
 from app.services.ai_job_service import AIJobService
 from app.services.ai_usage import AIUsageService
 from app.services.ai_workflow import AILeadWorkflow
+from app.services.rate_limit import rate_limit_ai
 
-router = APIRouter(prefix="/ai", tags=["ai"])
+router = APIRouter(prefix="/ai", tags=["ai"], dependencies=[Depends(rate_limit_ai)])
 
 
 @router.post("/analyze-lead", response_model=AnalyzeLeadResponse)
