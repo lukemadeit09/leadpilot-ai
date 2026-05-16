@@ -4,10 +4,11 @@ import { useCallback } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { AppShell } from "@/components/app-shell";
-import { Badge, EmptyState, LoadingRows, MetricCard, PageHeader, Panel } from "@/components/ui";
+import { Alert, Badge, EmptyState, LoadingCards, MetricCard, PageHeader, Panel, secondaryButtonClass } from "@/components/ui";
 import { api, statusLabel } from "@/lib/api";
 import { useAsyncData } from "@/hooks/use-api";
 import type { BillingUsage, DashboardMetrics } from "@/types";
+import Link from "next/link";
 
 type DashboardData = {
   metrics: DashboardMetrics;
@@ -35,11 +36,32 @@ export function DashboardClient() {
         description="Monitor lead quality, pipeline movement, task load, and recent AI-driven sales activity from one workspace."
         action={<Badge tone="info">Real-time ready API</Badge>}
       />
-      {error && <p className="rounded-md border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-100">{error}</p>}
+      {error && <Alert>{error}</Alert>}
       {loading || !data ? (
-        <LoadingRows />
+        <LoadingCards count={4} />
       ) : (
         <div className="space-y-5">
+          {data.metrics.total_leads === 0 && (
+            <Panel title="First-run checklist" description="Use the demo flow to populate the workspace in a few minutes">
+              <div className="grid gap-3 p-5 md:grid-cols-3">
+                <div className="rounded-md border border-line/70 bg-ink/70 p-4">
+                  <p className="text-sm font-semibold text-white">1. Analyze a customer email</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">Run the AI workflow with the sample message in the analyzer.</p>
+                  <Link className={`${secondaryButtonClass} mt-4`} href="/analyzer">Open analyzer</Link>
+                </div>
+                <div className="rounded-md border border-line/70 bg-ink/70 p-4">
+                  <p className="text-sm font-semibold text-white">2. Review created tasks</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">Confirm the follow-up task and CRM activity were created.</p>
+                  <Link className={`${secondaryButtonClass} mt-4`} href="/tasks">Open tasks</Link>
+                </div>
+                <div className="rounded-md border border-line/70 bg-ink/70 p-4">
+                  <p className="text-sm font-semibold text-white">3. Upload knowledge</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">Add product, FAQ, or pricing context for RAG answers.</p>
+                  <Link className={`${secondaryButtonClass} mt-4`} href="/knowledge">Open knowledge</Link>
+                </div>
+              </div>
+            </Panel>
+          )}
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard label="Total leads" value={data.metrics.total_leads} detail="All CRM records" />
             <MetricCard label="Qualified" value={data.metrics.qualified_leads} detail="Ready for sales action" />
@@ -84,7 +106,11 @@ export function DashboardClient() {
             <Panel title="Recent activity" description="Audit trail across AI and CRM actions" className="overflow-hidden">
               <div className="p-5">
               {data.metrics.recent_activity.length === 0 ? (
-                <EmptyState title="No activity yet" detail="Analyze a customer message to populate the operational timeline." />
+                <EmptyState
+                  title="No activity yet"
+                  detail="Analyze a customer message to populate the operational timeline with CRM, task, and AI events."
+                  action={<Link className={secondaryButtonClass} href="/analyzer">Run sample analysis</Link>}
+                />
               ) : (
                 <div className="space-y-2">
                   {data.metrics.recent_activity.map((activity) => (

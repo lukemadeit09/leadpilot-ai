@@ -74,21 +74,43 @@ export function MetricCard({ label, value, detail }: { label: string; value: str
   );
 }
 
-export function EmptyState({ title, detail }: { title: string; detail: string }) {
+export function Alert({ children, tone = "bad" }: { children: ReactNode; tone?: "bad" | "info" | "good" }) {
+  const tones = {
+    bad: "border-rose-400/30 bg-rose-400/10 text-rose-100",
+    info: "border-steel/30 bg-steel/10 text-sky-100",
+    good: "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
+  };
+  return <p className={clsx("rounded-md border p-3 text-sm", tones[tone])}>{children}</p>;
+}
+
+export function EmptyState({ title, detail, action }: { title: string; detail: string; action?: ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-line/90 bg-ink/55 p-8 text-center">
-      <div className="mx-auto mb-4 size-9 rounded-md border border-line bg-white/[0.03]" />
+    <div className="rounded-lg border border-dashed border-line/90 bg-ink/55 p-8 text-center shadow-inner shadow-black/20">
+      <div className="mx-auto mb-4 grid size-10 place-items-center rounded-md border border-line bg-white/[0.03]">
+        <div className="size-2 rounded-full bg-mint" />
+      </div>
       <h3 className="text-sm font-semibold text-white">{title}</h3>
       <p className="mx-auto mt-2 max-w-md text-sm text-slate-400">{detail}</p>
+      {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
   );
 }
 
-export function LoadingRows() {
+export function LoadingRows({ rows = 4 }: { rows?: number }) {
   return (
     <div className="space-y-3">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="h-14 animate-pulse rounded-md border border-line/60 bg-white/[0.035]" />
+      {Array.from({ length: rows }).map((_, index) => (
+        <div key={index} className="h-14 animate-pulse rounded-md border border-line/60 bg-gradient-to-r from-white/[0.025] via-white/[0.055] to-white/[0.025]" />
+      ))}
+    </div>
+  );
+}
+
+export function LoadingCards({ count = 3 }: { count?: number }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-3">
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="h-32 animate-pulse rounded-lg border border-line/70 bg-gradient-to-br from-white/[0.045] to-transparent" />
       ))}
     </div>
   );

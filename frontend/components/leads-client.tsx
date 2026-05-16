@@ -5,7 +5,7 @@ import { Plus, Search } from "lucide-react";
 import { FormEvent, useCallback, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
-import { Badge, buttonClass, EmptyState, Field, inputClass, LoadingRows, PageHeader, Panel, tableCellClass, tableHeaderClass } from "@/components/ui";
+import { Alert, Badge, buttonClass, EmptyState, Field, inputClass, LoadingRows, PageHeader, Panel, secondaryButtonClass, tableCellClass, tableHeaderClass } from "@/components/ui";
 import { api, statusLabel } from "@/lib/api";
 import { useAsyncData } from "@/hooks/use-api";
 import type { Lead, LeadStatus } from "@/types";
@@ -74,11 +74,15 @@ export function LeadsClient() {
           }
         >
           <div className="p-5">
-          {error && <p className="text-sm text-rose-200">{error}</p>}
+          {error && <Alert>{error}</Alert>}
           {loading || !data ? (
             <LoadingRows />
           ) : data.length === 0 ? (
-            <EmptyState title="No leads found" detail="Create a lead manually or analyze a customer message to populate the CRM." />
+            <EmptyState
+              title={query ? "No matching leads" : "No leads yet"}
+              detail={query ? "Try a broader search or clear the filter to view all pipeline records." : "Create a lead manually or run the AI analyzer sample to populate the CRM."}
+              action={!query && <Link className={secondaryButtonClass} href="/analyzer">Run sample analysis</Link>}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">

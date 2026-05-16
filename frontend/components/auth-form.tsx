@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 import { api, setToken } from "@/lib/api";
-import { buttonClass, Field, inputClass } from "@/components/ui";
+import { Alert, buttonClass, Field, inputClass } from "@/components/ui";
 import type { User } from "@/types";
 
 type AuthResponse = { access_token: string; user: User };
@@ -54,7 +54,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       <Field label="Password">
         <input name="password" type="password" className={inputClass} required minLength={8} />
       </Field>
-      {error && <p className="rounded-md border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-100">{error}</p>}
+      {error && <Alert>{error}</Alert>}
       <button className={`${buttonClass} w-full`} disabled={loading}>
         {loading ? "Working..." : mode === "login" ? "Sign in" : "Create account"}
         <ArrowRight size={16} />

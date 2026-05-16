@@ -4,6 +4,15 @@
 
 LeadPilot AI is an AI-powered CRM automation platform that reads customer messages, analyzes leads, generates replies, saves data to a CRM, creates follow-up tasks, and helps sales teams work faster.
 
+## Public Demo
+
+- Landing page: `/`
+- Pricing preview: `/pricing`
+- First-run guide: `/onboarding`
+- Product app: `/dashboard`
+
+Use [docs/DEMO.md](docs/DEMO.md) for a complete demo script and sample data. Use [docs/LAUNCH.md](docs/LAUNCH.md) for the public-demo readiness checklist.
+
 ## Product Summary
 
 LeadPilot AI demonstrates a production-style B2B SaaS workflow: a sales rep submits an inbound email, the backend runs an agentic AI workflow, the CRM pipeline is updated, a follow-up task is created, and the dashboard reflects the operational state.
@@ -62,6 +71,8 @@ RAG knowledge base details are available in [docs/RAG.md](docs/RAG.md).
 Security hardening details are available in [docs/SECURITY.md](docs/SECURITY.md).
 
 Observability and monitoring details are available in [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md).
+
+Demo and launch polish details are available in [docs/DEMO.md](docs/DEMO.md) and [docs/LAUNCH.md](docs/LAUNCH.md).
 
 ## Folder Structure
 
@@ -228,13 +239,27 @@ CI uses mock/test environment variables and does not require real OpenAI, Stripe
 
 ## Screenshots
 
-Add screenshots here after running the app locally:
+Add screenshots here after running the app locally with demo data. Recommended capture order:
 
-- Landing page
-- Dashboard
-- AI analyzer workflow
-- Leads table
-- Knowledge base
+- Landing page hero (`/`)
+- Pricing preview (`/pricing`)
+- First-run guide (`/onboarding`)
+- Dashboard with populated metrics (`/dashboard`)
+- AI analyzer workflow output (`/analyzer`)
+- Leads table and lead detail (`/leads`)
+- Knowledge base Q&A with citations (`/knowledge`)
+- Settings usage panel (`/settings`)
+
+Suggested assets:
+
+```text
+docs/screenshots/landing.png
+docs/screenshots/pricing.png
+docs/screenshots/onboarding.png
+docs/screenshots/dashboard.png
+docs/screenshots/analyzer.png
+docs/screenshots/knowledge.png
+```
 
 ## Portfolio Notes
 
